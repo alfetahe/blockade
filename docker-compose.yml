@@ -1,0 +1,12 @@
+version: "3"
+services: 
+  blockade:
+    image: 'erlang:25-alpine'
+    tty: true
+    working_dir: '/blockade'
+    user: 1000:1000
+    volumes:
+      - '.:/blockade'
+      - './cache/:/.cache'
+    environment:
+      - 'ERL_AFLAGS=-enable-feature all'  
