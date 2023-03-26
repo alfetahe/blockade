@@ -3,7 +3,7 @@
 -behaviour(gen_statem).
 
 -export([start_link/1]).
--export([idle/3]).
+-export([handle_event/4]).
 -export([init/1, callback_mode/0]).
 
 -record(state_data, {event_subscibers, events_emitted}).
@@ -16,12 +16,16 @@ init(_) ->
     {ok, idle, StateData}.
 
 callback_mode() ->
-    [state_functions, state_enter].
+    [handle_event_function].
 
 %%% State callbacks
 
-idle({call, From}, {add_event_subscriber, EventKey, Pid, Opts}, StateData) ->
+handle_event({call, From}, {add_event_subscriber, EventKey, Pid, Opts}, _State, StateData) ->
     NewStateData = StateData#state_data{event_subscibers = maps:put(EventKey, {Pid, Opts}, StateData#state_data.event_subscibers)},
     {keep_state, NewStateData, {reply, From, ok}};
-idle(_EventType, _EventData, StateData) ->
+handle_event({call, From}, {dispatch_event, _EventKey, _EventData, _Opts}, idle, StateData) ->
+    {next_state, dispatching_event, StateData, {reply, From, ok}};
+handle_event({call, From}, _EventData, _State, StateData) ->
+    {keep_state, StateData, {reply, From, {error, unknown_message}}};
+handle_event(_EventType, _EventData, _State, StateData) ->
     {keep_state, StateData}.
