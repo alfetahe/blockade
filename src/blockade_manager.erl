@@ -18,11 +18,12 @@
 
 start_link(#{name := Name} = Args) ->
     case gen_server:start_link({global, Name}, ?MODULE, Args, []) of
-        {ok, Pid} -> 
+        {ok, Pid} ->
             {ok, Pid};
-        {error, {already_started, Pid}} ->  
+        {error, {already_started, Pid}} ->
             {ok, Pid};
-        Else -> Else
+        Else ->
+            Else
     end.
 
 -spec init([]) -> {ok, idle, events()}.
