@@ -12,7 +12,7 @@
 %-------------------------------------------------------------------------------
 -spec subscribe(event_manager(),
                 blockade_manager:event_key(),
-                blockade_manager:subscriber_opts()) ->
+                blockade_manager:sub_opts()) ->
                    ok.
 subscribe(EventManager, EventKey, Opts) ->
     gen_server:call(EventManager, {add_sub, EventKey, self(), Opts}).
