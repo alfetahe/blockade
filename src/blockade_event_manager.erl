@@ -4,7 +4,7 @@
 
 -export([start_link/1]).
 -export([init/1, callback_mode/0]).
--export([open/3, locked_low/3, locked_normal/3, locked_high/3, locked_full/3]).
+-export([handle_event/4]).
 
 %%------------------------------------------------------------------------------
 %% Record definitions
@@ -24,33 +24,15 @@ init(_Opts) ->
     {ok, available, #state{}}.
 
 callback_mode() ->
-    [state_functions, state_enter].
+    [handle_event_function, state_enter].
 
 %%------------------------------------------------------------------------------
 %% State callbacks
 %%------------------------------------------------------------------------------
 
-open(enter, OldState, Data) ->
-    ok;
-open(EventType, EventContent, Data) ->
-    ok.
+% TODO: use pattern matching and guards to handle the events.
+handle_event(enter, OldState, State, Data) ->
+    {next_state, OldState, State, Data};
 
-locked_low(enter, OldState, Data) ->
-    ok;
-locked_low(EventType, EventContent, Data) ->
-    ok.
-
-locked_normal(enter, OldState, Data) ->
-    ok;
-locked_normal(EventType, EventContent, Data) ->
-    ok.
-
-locked_high(enter, OldState, Data) ->
-    ok;
-locked_high(EventType, EventContent, Data) ->
-    ok.
-
-locked_full(enter, OldState, Data) ->
-    ok;
-locked_full(EventType, EventContent, Data) ->
-    ok.
+handle_event(EventType, EventContent, State, Data) ->
+    {next_state, State, State, Data}. 
