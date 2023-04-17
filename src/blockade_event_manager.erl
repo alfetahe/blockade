@@ -40,32 +40,10 @@ handle_event({call, From},
              {dispatch, EventKey, Payload, #{priority := Priority} = Opts},
              PriorityLvl,
              Data) ->
-    StateRes =
-        case maps:get(new_priority, Opts, PriorityLvl) of
-            PriorityLvl ->
-                [keep_state];
-            NewState ->
-                [next_state, NewState]
-        end,
-
-    NewData =  
-        case priority_validation(Priority, PriorityLvl) of
-            true ->
-                dispatch_event(EventKey, Payload, Data#state.manager, Opts),
-                Data;
-            false ->
-                queue_event(EventKey, Payload, Opts, Data)
-        end,
-
-    Actions =    
-        case priority_validation(Priority, PriorityLvl) of
-            true ->
-                [[{reply, From, event_dispatched}]];
-            false ->
-                [[{reply, From, {ok, event_queued}}]]
-        end,
-
-    list_to_tuple(StateRes ++ NewData ++ Actions);
+    StateRes = state_transition(Opts, PriorityLvl),
+    NewData  = state_data(Priority, PriorityLvl, EventKey, Payload, Opts, Data),
+    Actions = state_actions(Priority, PriorityLvl, From),
+    format_response(StateRes, NewData, Actions);
 handle_event(enter, _OldState, _PriorityLvl, Data) ->
     {keep_state, Data};
 handle_event(_EventType, _EventContent, _PriorityLvl, Data) ->
@@ -115,3 +93,31 @@ priority_mapping(Priority) ->
 
 priority_validation(PassedPriority, PriorityLvl) ->
     priority_mapping(PassedPriority) >= priority_mapping(PriorityLvl).
+
+state_transition(Opts, PriorityLvl) ->
+    case maps:get(new_priority, Opts, PriorityLvl) of
+        PriorityLvl ->
+            [keep_state];
+        NewState ->
+            [next_state, NewState]
+    end.
+
+state_data(Priority, PriorityLvl, EventKey, Payload, Opts, Data) ->
+    case priority_validation(Priority, PriorityLvl) of
+        true ->
+            dispatch_event(EventKey, Payload, Data#state.manager, Opts),
+            Data;
+        false ->
+            queue_event(EventKey, Payload, Opts, Data)
+    end.
+
+state_actions(Priority, PriorityLvl, From) ->
+    case priority_validation(Priority, PriorityLvl) of
+        true ->
+            [[{reply, From, event_dispatched}]];
+        false ->
+            [[{reply, From, {ok, event_queued}}]]
+    end.    
+
+format_response(StateRes, NewData, Actions) ->
+    list_to_tuple(StateRes ++ NewData ++ Actions).
