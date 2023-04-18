@@ -12,50 +12,47 @@
 %% Types
 %%------------------------------------------------------------------------------
 -type event_manager() :: atom().
--type event_key() :: atom().
+-type event() :: atom().
 -type event_payload() :: term().
--type priority() :: low | medium | high | critical.
--type dispatch_opts() ::
-    #{priority => priority(),
-      members => local | global,
-      new_priority => priority()}.
+-type priority() :: integer().
+-type dispatch_opts() :: #{priority => priority(), members => local | global}.
 
 %%------------------------------------------------------------------------------
 %% Public API
 %%------------------------------------------------------------------------------
--spec add_handler(event_manager(), event_key()) -> ok.
-add_handler(EventManager, EventKey) ->
-    pg:join(EventManager, EventKey, self()).
+-spec add_handler(event_manager(), event()) -> ok.
+add_handler(EventManager, Event) ->
+    pg:join(EventManager, Event, self()).
 
--spec dispatch(event_manager(), event_key(), event_payload()) -> ok.
-dispatch(EventManager, EventKey, Payload) ->
-    dispatch(EventManager, EventKey, Payload, #{priority => medium}).
+-spec dispatch(event_manager(), event(), event_payload()) -> ok.
+dispatch(EventManager, Event, Payload) ->
+    dispatch(EventManager, Event, Payload, #{priority => medium}).
 
--spec dispatch_cast(event_manager(), event_key(), event_payload()) -> ok.
-dispatch_cast(EventManager, EventKey, Payload) ->
-    dispatch_cast(EventManager, EventKey, Payload, #{priority => medium}).
+-spec dispatch_cast(event_manager(), event(), event_payload()) -> ok.
+dispatch_cast(EventManager, Event, Payload) ->
+    dispatch_cast(EventManager, Event, Payload, #{priority => medium}).
 
 -spec dispatch(event_manager(),
-               event_key(),
+               event(),
                event_payload(),
                dispatch_opts()) ->
                   ok.
-dispatch(EventManager, EventKey, Payload, Opts) ->
-    gen_statem:call(EventManager,
-                    {dispatch, EventKey, Payload, format_opts(Opts)}).
+dispatch(EventManager, Event, Payload, Opts) ->
+    gen_server:call(EventManager,
+                    {dispatch, Event, Payload, format_opts(Opts)}).
 
 -spec dispatch_cast(event_manager(),
-                    event_key(),
+                    event(),
                     event_payload(),
                     dispatch_opts()) ->
                        ok.
-dispatch_cast(EventManager, EventKey, Payload, Opts) ->
-    gen_statem:cast(EventManager,
-                    {dispatch, EventKey, Payload, format_opts(Opts)}).
+dispatch_cast(EventManager, Event, Payload, Opts) ->
+    gen_server:cast(EventManager,
+                    {dispatch, Event, Payload, format_opts(Opts)}).
 
 -spec set_priority(event_manager(), priority()) -> ok.
 set_priority(EventManager, Priority) ->
-    gen_statem:call(EventManager, {set_priority, Priority}).
+    gen_server:call(EventManager, {set_priority, Priority}).
 
 %%------------------------------------------------------------------------------
 %% Private functions

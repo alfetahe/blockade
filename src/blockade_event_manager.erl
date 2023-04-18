@@ -1,10 +1,9 @@
 -module(blockade_event_manager).
 
--behaviour(gen_statem).
+-behaviour(gen_server).
 
 -export([start_link/1]).
--export([init/1, callback_mode/0]).
--export([handle_event/4]).
+-export([init/1, handle_cast/2, handle_call/3]).
 
 %%------------------------------------------------------------------------------
 %% Record definitions
@@ -12,48 +11,50 @@
 -record(state,
         {manager :: blockade:event_manager(),
          event_queue = [] :: list(),
-         opts = #{} :: map()}).
+         priority_level = 0 :: integer(),
+         schduler_ref = undefined :: reference() | undefined}).
 
 %%------------------------------------------------------------------------------
 %% Internal API
 %%------------------------------------------------------------------------------
 start_link(#{name := Name} = _Args) ->
-    gen_statem:start_link({local, Name}, ?MODULE, [Name], []).
+    gen_server:start_link({local, Name}, ?MODULE, [Name], []).
 
 %%------------------------------------------------------------------------------
-%% Behaviour required callbacks
+%% Callbacks
 %%------------------------------------------------------------------------------
 init(Name) ->
     {ok, low, #state{manager = Name}}.
 
-callback_mode() ->
-    [handle_event_function, state_enter].
+handle_cast({dispatch, Event, Payload, #{priority := Priority} = Opts}, State)
+    when Priority >= State#state.priority_level ->
+    dispatch_event(Event, Payload, State#state.manager, Opts),
+    {noreply, State};
+handle_cast({dispatch, Event, Payload, Opts}, State) ->
+    {noreply, queue_event(Event, Payload, Opts, State)};
+handle_cast(_Msg, State) ->
+    {noreply, State}.
 
-%%------------------------------------------------------------------------------
-%% State callbacks
-%%------------------------------------------------------------------------------
-
-% TODO: use pattern matching and guards to handle the events.
-handle_event({call, From}, {set_priority, NewPriority}, _PriorityLvl, Data) ->
-    {next_state, NewPriority, Data, [{reply, From, ok}]};
-handle_event({call, From},
-             {dispatch, EventKey, Payload, #{priority := Priority} = Opts},
-             PriorityLvl,
-             Data) ->
-    StateRes = state_transition(Opts, PriorityLvl),
-    NewData  = state_data(Priority, PriorityLvl, EventKey, Payload, Opts, Data),
-    Actions = state_actions(Priority, PriorityLvl, From),
-    format_response(StateRes, NewData, Actions);
-handle_event(enter, _OldState, _PriorityLvl, Data) ->
-    {keep_state, Data};
-handle_event(_EventType, _EventContent, _PriorityLvl, Data) ->
-    {keep_state, Data}.
+handle_call({set_priority, PriorityLvl}, _From, State) ->
+    NewState =
+        State#state{priority_level = PriorityLvl, schduler_ref = undefined},
+    {reply, {ok, priority_set}, NewState};
+handle_call({dispatch, Event, Payload, #{priority := Priority} = Opts},
+            _From,
+            State)
+    when Priority >= State#state.priority_level ->
+    dispatch_event(Event, Payload, State#state.manager, Opts),
+    {reply, {ok, event_dispatched}, State};
+handle_call({dispatch, Event, Payload, Opts}, _From, State) ->
+    {reply, {ok, event_queued}, queue_event(Event, Payload, Opts, State)};
+handle_call(_Msg, _From, State) ->
+    {reply, {error, unknown_msg}, State}.
 
 %%------------------------------------------------------------------------------
 %% Private functions
 %%------------------------------------------------------------------------------
 
-dispatch_event(EventKey, Payload, Manager, Opts) ->
+dispatch_event(Event, Payload, Manager, Opts) ->
     Members = maps:get(members, Opts, global),
 
     Pids =
@@ -65,59 +66,14 @@ dispatch_event(EventKey, Payload, Manager, Opts) ->
             _ ->
                 throw({error, invalid_members_option})
         end,
-    send_messages(Pids, EventKey, Payload).
+    send_messages(Pids, Event, Payload).
 
-send_messages([], _EventKey, _Payload) ->
+send_messages([], _Event, _Payload) ->
     ok;
-send_messages([Pid | Pids], EventKey, Payload) ->
-    Pid ! {EventKey, Payload},
-    send_messages(Pids, EventKey, Payload).
+send_messages([Pid | Pids], Event, Payload) ->
+    Pid ! {Event, Payload},
+    send_messages(Pids, Event, Payload).
 
-queue_event(EventKey, Payload, Opts, Data) ->
-    NewQueue = [{EventKey, Payload, Opts} | Data#state.event_queue],
-    Data#state{event_queue = NewQueue}.
-
-priority_mapping(Priority) ->
-    case Priority of
-        low ->
-            1;
-        medium ->
-            2;
-        high ->
-            3;
-        critical ->
-            4;
-        true ->
-            throw({error, invalid_priority})
-    end.
-
-priority_validation(PassedPriority, PriorityLvl) ->
-    priority_mapping(PassedPriority) >= priority_mapping(PriorityLvl).
-
-state_transition(Opts, PriorityLvl) ->
-    case maps:get(new_priority, Opts, PriorityLvl) of
-        PriorityLvl ->
-            [keep_state];
-        NewState ->
-            [next_state, NewState]
-    end.
-
-state_data(Priority, PriorityLvl, EventKey, Payload, Opts, Data) ->
-    case priority_validation(Priority, PriorityLvl) of
-        true ->
-            dispatch_event(EventKey, Payload, Data#state.manager, Opts),
-            Data;
-        false ->
-            queue_event(EventKey, Payload, Opts, Data)
-    end.
-
-state_actions(Priority, PriorityLvl, From) ->
-    case priority_validation(Priority, PriorityLvl) of
-        true ->
-            [[{reply, From, event_dispatched}]];
-        false ->
-            [[{reply, From, {ok, event_queued}}]]
-    end.    
-
-format_response(StateRes, NewData, Actions) ->
-    list_to_tuple(StateRes ++ NewData ++ Actions).
+queue_event(Event, Payload, Opts, State) ->
+    NewQueue = [{Event, Payload, Opts} | State#state.event_queue],
+    State#state{event_queue = NewQueue}.
