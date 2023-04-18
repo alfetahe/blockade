@@ -1,5 +1,7 @@
 -module(blockade).
 
+-include("blockade_header.hrl").
+
 %%------------------------------------------------------------------------------
 %% Public API exports
 %%------------------------------------------------------------------------------
@@ -15,7 +17,8 @@
 -type event() :: atom().
 -type event_payload() :: term().
 -type priority() :: integer().
--type priority_opts() :: #{reset_after => integer()}.
+-type priority_opts() ::
+    #{reset_after => integer(), discard_events => boolean()}.
 -type dispatch_opts() :: #{priority => priority(), members => local | global}.
 
 %%------------------------------------------------------------------------------
@@ -61,5 +64,5 @@ set_priority(EventManager, Priority, Opts) ->
 %%------------------------------------------------------------------------------
 
 format_opts(Opts) ->
-    Priority = maps:get(priority, Opts, medium),
+    Priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY),
     maps:put(priority, Priority, Opts).
