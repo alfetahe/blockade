@@ -5,8 +5,8 @@
 %%------------------------------------------------------------------------------
 %% Public API exports
 %%------------------------------------------------------------------------------
--export([add_handler/2, dispatch/3, dispatch_cast/3, dispatch/4,
-         dispatch_cast/4, set_priority/2, set_priority/3]).
+-export([add_handler/2, dispatch/4,
+         dispatch_async/4, set_priority/3, set_priority_async/3]).
 
 -export_type([event_manager/0]).
 
@@ -28,34 +28,26 @@
 add_handler(EventManager, Event) ->
     pg:join(EventManager, Event, self()).
 
--spec dispatch(event_manager(), event(), event_payload()) -> ok.
-dispatch(EventManager, Event, Payload) ->
-    dispatch(EventManager, Event, Payload, #{priority => medium}).
-
--spec dispatch_cast(event_manager(), event(), event_payload()) -> ok.
-dispatch_cast(EventManager, Event, Payload) ->
-    dispatch_cast(EventManager, Event, Payload, #{priority => medium}).
-
 -spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) ->
-                  ok.
+                  {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.
 dispatch(EventManager, Event, Payload, Opts) ->
     gen_server:call(EventManager,
                     {dispatch, Event, Payload, format_opts(Opts)}).
 
--spec dispatch_cast(event_manager(),
+-spec dispatch_async(event_manager(),
                     event(),
                     event_payload(),
                     dispatch_opts()) ->
                        ok.
-dispatch_cast(EventManager, Event, Payload, Opts) ->
+dispatch_async(EventManager, Event, Payload, Opts) ->
     gen_server:cast(EventManager,
                     {dispatch, Event, Payload, format_opts(Opts)}).
 
--spec set_priority(event_manager(), priority()) -> ok.
-set_priority(EventManager, Priority) ->
-    set_priority(EventManager, Priority, #{}).
+-spec set_priority_async(event_manager(), priority(), priority_opts()) -> ok.
+set_priority_async(EventManager, Priority, Opts) ->
+        gen_server:cast(EventManager, {set_priority, Priority, Opts}).
 
--spec set_priority(event_manager(), priority(), priority_opts()) -> ok.
+-spec set_priority(event_manager(), priority(), priority_opts()) -> {ok, priority_set}.
 set_priority(EventManager, Priority, Opts) ->
     gen_server:call(EventManager, {set_priority, Priority, Opts}).
 
