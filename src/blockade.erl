@@ -4,7 +4,7 @@
 %% Public API exports
 %%------------------------------------------------------------------------------
 -export([add_handler/2, dispatch/3, dispatch_cast/3, dispatch/4,
-         dispatch_cast/4, set_priority/2]).
+         dispatch_cast/4, set_priority/2, set_priority/3]).
 
 -export_type([event_manager/0]).
 
@@ -15,6 +15,7 @@
 -type event() :: atom().
 -type event_payload() :: term().
 -type priority() :: integer().
+-type priority_opts() :: #{reset_after => integer()}.
 -type dispatch_opts() :: #{priority => priority(), members => local | global}.
 
 %%------------------------------------------------------------------------------
@@ -32,10 +33,7 @@ dispatch(EventManager, Event, Payload) ->
 dispatch_cast(EventManager, Event, Payload) ->
     dispatch_cast(EventManager, Event, Payload, #{priority => medium}).
 
--spec dispatch(event_manager(),
-               event(),
-               event_payload(),
-               dispatch_opts()) ->
+-spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) ->
                   ok.
 dispatch(EventManager, Event, Payload, Opts) ->
     gen_server:call(EventManager,
@@ -52,7 +50,11 @@ dispatch_cast(EventManager, Event, Payload, Opts) ->
 
 -spec set_priority(event_manager(), priority()) -> ok.
 set_priority(EventManager, Priority) ->
-    gen_server:call(EventManager, {set_priority, Priority}).
+    set_priority(EventManager, Priority, #{}).
+
+-spec set_priority(event_manager(), priority(), priority_opts()) -> ok.
+set_priority(EventManager, Priority, Opts) ->
+    gen_server:call(EventManager, {set_priority, Priority, Opts}).
 
 %%------------------------------------------------------------------------------
 %% Private functions
