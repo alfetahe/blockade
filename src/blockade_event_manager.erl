@@ -27,7 +27,8 @@ start_link(#{name := Name} = Args) ->
 %% Callbacks
 %%------------------------------------------------------------------------------
 init(Opts) ->
-    erlang:process_send_after(?EVENT_QUEUE_PRUNE, self(), prune_queue),
+    erlang:process_send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
+    erlang:process_send_after(?EVENT_QUEUE_SYNC, self(), queue_sync),
     {ok,
      #state{manager = maps:get(name, Opts),
             discard_events =
@@ -57,6 +58,8 @@ handle_cast(_Msg, State) ->
 handle_call({dispatch, Event, Payload, Opts}, _From, State) ->
     {Resp, NewState} = queue_event(Event, Payload, Opts, State),
     {reply, {ok, Resp}, NewState};
+handle_call(get_priority, _From, #state{priority = Priority} = State) ->
+    {reply, {ok, Priority}, State};
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_msg}, State}.
 
@@ -71,9 +74,12 @@ handle_info(reset_priority,
      State#state{priority = ?DEFAULT_PRIORITY,
                  schduler_ref = undefined,
                  event_queue = NewEventQueue}};
-handle_info(prune_queue, State) ->
-    erlang:process_send_after(?EVENT_QUEUE_PRUNE, self(), prune_queue),
-    {noreply, prune_queue(State)};
+handle_info(queue_prune, State) ->
+    erlang:process_send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
+    {noreply, queue_prune(State)};
+handle_info(queue_sync, State) ->
+    erlang:process_send_after(?EVENT_QUEUE_SYNC, self(), queue_sync),
+    {noreply, queue_sync(State)};
 handle_info(_Msg, State) ->
     {noreply, State}.
 
@@ -133,7 +139,7 @@ schedule_reset(Opts) ->
             erlang:process_send_after(ResetAfter, self(), reset_priority)
     end.
 
-prune_queue(#state{priority = Priority,
+queue_prune(#state{priority = Priority,
                    discard_events = true,
                    event_queue = EventQueue} =
                 State) ->
@@ -142,5 +148,20 @@ prune_queue(#state{priority = Priority,
          || {_, _, #{priority := EventPriority}} = EventData <- EventQueue,
             EventPriority >= Priority],
     State#state{event_queue = NewEventQueue};
-prune_queue(State) ->
+queue_prune(State) ->
     State.
+
+queue_sync(#state{priority = LocalPriority} = State) ->
+    AgreedPriority = case remote_priority() of
+        LocalPriority -> LocalPriority;
+        RemotePriority -> 
+            % Check once again.
+            RemotePrioritySec = remote_priority(),
+            [LocalPriority, RemotePriority, RemotePrioritySec]
+    end,
+    State#state{priority = AgreedPriority}.
+
+remote_priority() ->
+    Nodes = erlang:nodes(),
+    RandomNode = lists:nth(rand:uniform(length(Nodes)), Nodes),
+    gen_server:call({RandomNode, ?MODULE}, get_priority, ?GEN_CALL_TIMEOUT).
