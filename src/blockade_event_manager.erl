@@ -54,24 +54,6 @@ handle_cast({set_priority, PriorityLvl, Opts},
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
-handle_call({set_priority, PriorityLvl, Opts},
-            _From,
-            #state{event_queue = EventQueue, manager = Manager} = State) ->
-    NewEventQueue =
-        dispatch_queued(lists:reverse(EventQueue), Manager, PriorityLvl, []),
-    {reply,
-     {ok, priority_set},
-     State#state{priority = PriorityLvl,
-                 schduler_ref = schedule_reset(Opts),
-                 event_queue = NewEventQueue,
-                 discard_events =
-                     maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS)}};
-handle_call({dispatch, Event, Payload, #{priority := Priority} = Opts},
-            _From,
-            State)
-    when Priority >= State#state.priority ->
-    dispatch_event(Event, Payload, State#state.manager, Opts),
-    {reply, {ok, event_dispatched}, State};
 handle_call({dispatch, Event, Payload, Opts}, _From, State) ->
     {Resp, NewState} = queue_event(Event, Payload, Opts, State),
     {reply, {ok, Resp}, NewState};

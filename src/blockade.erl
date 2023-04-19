@@ -5,8 +5,7 @@
 %%------------------------------------------------------------------------------
 %% Public API exports
 %%------------------------------------------------------------------------------
--export([add_handler/2, dispatch/4,
-         dispatch_async/4, set_priority/3, set_priority_async/3]).
+-export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3]).
 
 -export_type([event_manager/0]).
 
@@ -19,7 +18,10 @@
 -type priority() :: integer().
 -type priority_opts() ::
     #{reset_after => integer(), discard_events => boolean()}.
--type dispatch_opts() :: #{priority => priority(), members => local | global}.
+-type dispatch_opts() ::
+    #{priority => priority(),
+      members => local | global,
+      timeout => integer()}.
 
 %%------------------------------------------------------------------------------
 %% Public API
@@ -29,27 +31,27 @@ add_handler(EventManager, Event) ->
     pg:join(EventManager, Event, self()).
 
 -spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) ->
-                  {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.
+                  {ok, event_dispatched} |
+                  {ok, event_queued} |
+                  {ok, event_discarded}.
 dispatch(EventManager, Event, Payload, Opts) ->
-    gen_server:call(EventManager,
+    gen_server:cast(EventManager,
                     {dispatch, Event, Payload, format_opts(Opts)}).
 
--spec dispatch_async(event_manager(),
+-spec dispatch_sync(event_manager(),
                     event(),
                     event_payload(),
                     dispatch_opts()) ->
                        ok.
-dispatch_async(EventManager, Event, Payload, Opts) ->
-    gen_server:cast(EventManager,
-                    {dispatch, Event, Payload, format_opts(Opts)}).
+dispatch_sync(EventManager, Event, Payload, Opts) ->
+    gen_server:call(EventManager,
+                    {dispatch, Event, Payload, format_opts(Opts)},
+                    maps:get(timeout, Opts, ?GEN_CALL_TIMEOUT)).
 
--spec set_priority_async(event_manager(), priority(), priority_opts()) -> ok.
-set_priority_async(EventManager, Priority, Opts) ->
-        gen_server:cast(EventManager, {set_priority, Priority, Opts}).
-
--spec set_priority(event_manager(), priority(), priority_opts()) -> {ok, priority_set}.
+-spec set_priority(event_manager(), priority(), priority_opts()) -> ok.
 set_priority(EventManager, Priority, Opts) ->
-    gen_server:call(EventManager, {set_priority, Priority, Opts}).
+    Nodes = [node() | erlang:nodes([visible])],
+    gen_server:abcast(Nodes, EventManager, {set_priority, Priority, Opts}).
 
 %%------------------------------------------------------------------------------
 %% Private functions
