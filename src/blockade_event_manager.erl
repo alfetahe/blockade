@@ -157,8 +157,15 @@ queue_sync(#state{priority = LocalPriority} = State) ->
         RemotePriority -> 
             % Check once again.
             RemotePrioritySec = remote_priority(),
-            [LocalPriority, RemotePriority, RemotePrioritySec]
-    end,
+            Priorities = [LocalPriority, RemotePriority, RemotePrioritySec],
+						PrioritiesSorted = lists:foldl(fun(El, Acc) -> 
+             maps:put(el, maps:get(el, Acc, 0) + 1, Acc)
+						end, #{}, Priorities),
+						{SelectedPrio, _Count} = lists:foldl(fun({Prio, Count} = El, {AccPrio, AccCount} = Acc) -> 
+							case Count > AccCount of true -> El; false -> Acc
+						end), {undefined, 0}, maps:to_list(PrioritiesSorted),
+					  SelectedPrio
+					end,
     State#state{priority = AgreedPriority}.
 
 remote_priority() ->
