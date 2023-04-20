@@ -5,7 +5,7 @@
 %%------------------------------------------------------------------------------
 %% Public API exports
 %%------------------------------------------------------------------------------
--export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3]).
+-export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3, get_priority/1]).
 
 -export_type([event_manager/0]).
 
@@ -52,6 +52,10 @@ dispatch_sync(EventManager, Event, Payload, Opts) ->
 set_priority(EventManager, Priority, Opts) ->
     Nodes = [node() | erlang:nodes([visible])],
     gen_server:abcast(Nodes, EventManager, {set_priority, Priority, Opts}).
+
+-spec get_priority(event_manager()) -> {ok, priority()}.
+get_priority(EventManager) ->
+		gen_server:call(EventManager, get_priority).
 
 %%------------------------------------------------------------------------------
 %% Private functions
