@@ -152,23 +152,33 @@ queue_prune(State) ->
     State.
 
 queue_sync(#state{priority = LocalPriority} = State) ->
-    AgreedPriority = case remote_priority() of
-        LocalPriority -> LocalPriority;
-        RemotePriority -> 
-            % Check once again.
-            RemotePrioritySec = remote_priority(),
-            Priorities = [LocalPriority, RemotePriority, RemotePrioritySec],
-						PrioritiesSorted = lists:foldl(fun(El, Acc) -> 
-             maps:put(el, maps:get(el, Acc, 0) + 1, Acc)
-						end, #{}, Priorities),
-						{SelectedPrio, _Count} = lists:foldl(fun({Prio, Count} = El, {AccPrio, AccCount} = Acc) -> 
-							case Count > AccCount of true -> El; false -> Acc
-						end), {undefined, 0}, maps:to_list(PrioritiesSorted),
-					  SelectedPrio
-					end,
+    AgreedPriority =
+        case remote_priority() of
+            LocalPriority ->
+                LocalPriority;
+            RemotePriority ->
+                % Check once again.
+                RemotePrioritySec = remote_priority(),
+                [SelectedPrio | _] =
+                    most([LocalPriority, RemotePriority, RemotePrioritySec]),
+                SelectedPrio
+        end,
     State#state{priority = AgreedPriority}.
 
 remote_priority() ->
     Nodes = erlang:nodes(),
-    RandomNode = lists:nth(rand:uniform(length(Nodes)), Nodes),
+    RandomNode =
+        lists:nth(
+            rand:uniform(length(Nodes)), Nodes),
     gen_server:call({RandomNode, ?MODULE}, get_priority, ?GEN_CALL_TIMEOUT).
+
+most(List) ->
+    ListCounted =
+        lists:foldl(fun(El, Acc) -> maps:put(El, maps:get(El, Acc, 0) + 1, Acc)
+                    end,
+                    #{},
+                    List),
+    ListSorted =
+        lists:sort(fun({_, Acount}, {_, Bcount}) -> Acount > Bcount end,
+                   maps:to_list(ListCounted)),
+    [Value || {Value, _Count} <- ListSorted].
