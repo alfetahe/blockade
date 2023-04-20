@@ -5,7 +5,7 @@
 -behaviour(gen_server).
 
 -export([start_link/1]).
--export([init/1, handle_cast/2, handle_call/3, handle_info/2]).
+-export([init/1, handle_cast/2, handle_call/3, handle_info/2, handle_continue/2]).
 
 %%------------------------------------------------------------------------------
 %% Record definitions
@@ -33,7 +33,10 @@ init(Opts) ->
      #state{manager = maps:get(name, Opts),
             discard_events =
                 maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS),
-            priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY)}}.
+            priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY)}, {continue, priority_init}}.
+
+handle_continue(priority_init, State) ->
+		{noreply, priority_sync(State)}.
 
 handle_cast({dispatch, Event, Payload, #{priority := Priority} = Opts}, State)
     when Priority >= State#state.priority ->
@@ -77,9 +80,9 @@ handle_info(reset_priority,
 handle_info(queue_prune, State) ->
     erlang:process_send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
     {noreply, queue_prune(State)};
-handle_info(queue_sync, State) ->
-    erlang:process_send_after(?EVENT_QUEUE_SYNC, self(), queue_sync),
-    {noreply, queue_sync(State)};
+handle_info(priority_sync, State) ->
+    erlang:process_send_after(?PRIORITY_SYNC, self(), priority_sync),
+    {noreply, priority_sync(State)};
 handle_info(_Msg, State) ->
     {noreply, State}.
 
@@ -151,7 +154,7 @@ queue_prune(#state{priority = Priority,
 queue_prune(State) ->
     State.
 
-queue_sync(#state{priority = LocalPriority} = State) ->
+priority_sync(#state{priority = LocalPriority} = State) ->
     AgreedPriority =
         case remote_priority() of
             LocalPriority ->
