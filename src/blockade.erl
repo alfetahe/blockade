@@ -5,7 +5,8 @@
 %%------------------------------------------------------------------------------
 %% Public API exports
 %%------------------------------------------------------------------------------
--export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3, get_priority/1]).
+-export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3,
+         get_priority/1]).
 
 -export_type([event_manager/0]).
 
@@ -55,7 +56,7 @@ set_priority(EventManager, Priority, Opts) ->
 
 -spec get_priority(event_manager()) -> {ok, priority()}.
 get_priority(EventManager) ->
-		gen_server:call(EventManager, get_priority).
+    gen_server:call(EventManager, get_priority).
 
 %%------------------------------------------------------------------------------
 %% Private functions
