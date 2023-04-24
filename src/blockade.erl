@@ -6,7 +6,7 @@
 %% Public API exports
 %%------------------------------------------------------------------------------
 -export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3,
-         get_priority/1]).
+         get_priority/1, get_handlers/2, get_events/1, remove_handler/2]).
 
 -export_type([event_manager/0]).
 
@@ -30,6 +30,18 @@
 -spec add_handler(event_manager(), event()) -> ok.
 add_handler(EventManager, Event) ->
     pg:join(?PROCESS_NAME(EventManager, "pg"), Event, self()).
+
+-spec remove_handler(event_manager(), event()) -> ok | not_joined.
+remove_handler(EventManager, Event) ->
+    pg:leave(?PROCESS_NAME(EventManager, "pg"), Event, self()).
+
+-spec get_handlers(event_manager(), event()) -> [pid()].
+get_handlers(EventManager, Event) ->
+    pg:get_members(?PROCESS_NAME(EventManager, "pg"), Event).
+
+-spec get_events(event_manager()) -> [event()].
+get_events(EventManager) ->
+    pg:which_groups(?PROCESS_NAME(EventManager, "pg")).
 
 -spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) ->
                   {ok, event_dispatched} |
