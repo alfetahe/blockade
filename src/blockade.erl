@@ -29,7 +29,7 @@
 %%------------------------------------------------------------------------------
 -spec add_handler(event_manager(), event()) -> ok.
 add_handler(EventManager, Event) ->
-    pg:join(EventManager, Event, self()).
+    pg:join(?PROCESS_NAME(EventManager, "pg"), Event, self()).
 
 -spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) ->
                   {ok, event_dispatched} |

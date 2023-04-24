@@ -22,7 +22,7 @@
 %% Internal API
 %%------------------------------------------------------------------------------
 start_link(#{name := Name} = Args) ->
-    gen_server:start_link({local, Name}, ?MODULE, [Args], []).
+    gen_server:start_link({local, Name}, ?MODULE, Args, []).
 
 %%------------------------------------------------------------------------------
 %% Callbacks
@@ -94,13 +94,13 @@ handle_info(_Msg, State) ->
 
 dispatch_event(Event, Payload, Manager, Opts) ->
     Members = maps:get(members, Opts, global),
-
+    PgScope = ?PROCESS_NAME(Manager, "pg"),
     Pids =
         case Members of
             local ->
-                pg:get_local_members(Manager);
+                pg:get_local_members(PgScope);
             global ->
-                pg:get_members(Manager);
+                pg:get_members(PgScope);
             _ ->
                 throw({error, invalid_members_option})
         end,
@@ -172,10 +172,16 @@ priority_sync(#state{priority = LocalPriority} = State) ->
 
 remote_priority() ->
     Nodes = erlang:nodes(),
-    RandomNode =
-        lists:nth(
-            rand:uniform(length(Nodes)), Nodes),
-    gen_server:call({RandomNode, ?MODULE}, get_priority, ?GEN_CALL_TIMEOUT).
+    if length(Nodes) == 0 ->
+           ?DEFAULT_PRIORITY;
+       true ->
+           RandomNode =
+               lists:nth(
+                   rand:uniform(length(Nodes)), Nodes),
+           gen_server:call({RandomNode, ?MODULE},
+                           get_priority,
+                           ?GEN_CALL_TIMEOUT)
+    end.
 
 most(List) ->
     ListCounted =
