@@ -28,8 +28,8 @@ start_link(#{name := Name} = Args) ->
 %% Callbacks
 %%------------------------------------------------------------------------------
 init(Opts) ->
-    erlang:process_send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
-    erlang:process_send_after(?PRIORITY_SYNC, self(), queue_sync),
+    erlang:send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
+    erlang:send_after(?PRIORITY_SYNC, self(), queue_sync),
     {ok,
      #state{manager = maps:get(name, Opts),
             discard_events =
@@ -80,10 +80,10 @@ handle_info(reset_priority,
                  schduler_ref = undefined,
                  event_queue = NewEventQueue}};
 handle_info(queue_prune, State) ->
-    erlang:process_send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
+    erlang:send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
     {noreply, queue_prune(State)};
 handle_info(priority_sync, State) ->
-    erlang:process_send_after(?PRIORITY_SYNC, self(), priority_sync),
+    erlang:send_after(?PRIORITY_SYNC, self(), priority_sync),
     {noreply, priority_sync(State)};
 handle_info(_Msg, State) ->
     {noreply, State}.
@@ -141,7 +141,7 @@ schedule_reset(Opts) ->
         undefined ->
             undefined;
         _ ->
-            erlang:process_send_after(ResetAfter, self(), reset_priority)
+            erlang:send_after(ResetAfter, self(), reset_priority)
     end.
 
 queue_prune(#state{priority = Priority,
