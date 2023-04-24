@@ -98,9 +98,9 @@ dispatch_event(Event, Payload, Manager, Opts) ->
     Pids =
         case Members of
             local ->
-                pg:get_local_members(PgScope);
+                pg:get_local_members(PgScope, Event);
             global ->
-                pg:get_members(PgScope);
+                pg:get_members(PgScope, Event);
             _ ->
                 throw({error, invalid_members_option})
         end,

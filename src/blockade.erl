@@ -70,6 +70,8 @@ set_priority(EventManager, Priority, Opts) ->
 get_priority(EventManager) ->
     gen_server:call(EventManager, get_priority).
 
+    %TODO: Add new function prune event queue, get queued events
+
 %%------------------------------------------------------------------------------
 %% Private functions
 %%------------------------------------------------------------------------------
