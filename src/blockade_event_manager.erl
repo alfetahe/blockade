@@ -64,6 +64,10 @@ handle_call({dispatch, Event, Payload, Opts}, _From, State) ->
     {reply, {ok, Resp}, NewState};
 handle_call(get_priority, _From, #state{priority = Priority} = State) ->
     {reply, {ok, Priority}, State};
+handle_call(get_event_queue, _From, #state{event_queue = Eq} = State) ->
+    {reply, {ok, Eq}, State};
+handle_call(get_event_queue, _From, State) ->
+    {reply, ok, State#state{event_queue = []}};
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_msg}, State}.
 

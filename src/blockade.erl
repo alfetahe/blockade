@@ -6,7 +6,8 @@
 %% Public API exports
 %%------------------------------------------------------------------------------
 -export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3,
-         get_priority/1, get_handlers/2, get_events/1, remove_handler/2]).
+         get_priority/1, get_handlers/2, get_events/1, remove_handler/2,
+         get_event_queue/1, prune_event_queue/1]).
 
 -export_type([event_manager/0]).
 
@@ -71,7 +72,13 @@ set_priority(EventManager, Priority, Opts) ->
 get_priority(EventManager) ->
     gen_server:call(EventManager, get_priority).
 
-    %TODO: Add new function prune event queue, get queued events
+-spec get_event_queue(event_manager()) -> {ok, list()}.
+get_event_queue(EventManager) ->
+    gen_server:call(EventManager, get_event_queue).
+
+-spec prune_event_queue(event_manager()) -> ok.
+prune_event_queue(EventManager) ->
+    gen_server:call(EventManager, prune_event_queue).
 
 %%------------------------------------------------------------------------------
 %% Private functions
