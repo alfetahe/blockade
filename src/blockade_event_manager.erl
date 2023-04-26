@@ -5,12 +5,11 @@
 -behaviour(gen_server).
 
 -export([start_link/1]).
--export([init/1, handle_cast/2, handle_call/3, handle_info/2,
-         handle_continue/2]).
+-export([init/1, handle_cast/2, handle_call/3, handle_info/2, handle_continue/2]).
 
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 %% Record definitions
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 -record(state,
         {manager :: blockade:event_manager(),
          event_queue = [] :: list(),
@@ -18,22 +17,21 @@
          schduler_ref = undefined :: reference() | undefined,
          discard_events = ?DEFAULT_DISCARD_EVENTS}).
 
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 %% Internal API
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 start_link(#{name := Name} = Args) ->
     gen_server:start_link({local, Name}, ?MODULE, Args, []).
 
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 %% Callbacks
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 init(Opts) ->
     erlang:send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
     erlang:send_after(?PRIORITY_SYNC, self(), queue_sync),
     {ok,
      #state{manager = maps:get(name, Opts),
-            discard_events =
-                maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS),
+            discard_events = maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS),
             priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY)},
      {continue, priority_init}}.
 
@@ -54,8 +52,7 @@ handle_cast({set_priority, Plvl, Opts},
      State#state{priority = Plvl,
                  schduler_ref = schedule_reset(Opts),
                  event_queue = Neq,
-                 discard_events =
-                     maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS)}};
+                 discard_events = maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS)}};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -66,9 +63,8 @@ handle_call(get_priority, _From, #state{priority = Priority} = State) ->
     {reply, {ok, Priority}, State};
 handle_call(get_event_queue, _From, #state{event_queue = Eq} = State) ->
     {reply, {ok, Eq}, State};
-handle_call(prune_event_queue, _From, #state{discard_events = De} = State) ->
-    Ns = queue_prune(State#state{discard_events = true}),
-    {reply, ok, Ns#state{discard_events = De}};
+handle_call(prune_event_queue, _From, State) ->
+    {reply, ok, State#state{event_queue = []}};
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_msg}, State}.
 
@@ -87,9 +83,9 @@ handle_info(reset_priority, #state{event_queue = Eq, manager = Man} = State) ->
 handle_info(_Msg, State) ->
     {noreply, State}.
 
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 %% Private functions
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 
 dispatch_event(Event, Payload, Man, Opts) ->
     M = maps:get(members, Opts, global),
@@ -111,10 +107,7 @@ send_messages([Pid | Pids], Event, Payload) ->
     Pid ! {Event, Payload},
     send_messages(Pids, Event, Payload).
 
-queue_event(_,
-            _,
-            #{priority := Ep},
-            #state{discard_events = true, priority = P} = State)
+queue_event(_, _, #{priority := Ep}, #state{discard_events = true, priority = P} = State)
     when Ep < P ->
     {event_discarded, State};
 queue_event(Event, Payload, Opts, State) ->
@@ -123,10 +116,7 @@ queue_event(Event, Payload, Opts, State) ->
 
 dispatch_queued([], _, _, Eq) ->
     lists:reverse(Eq);
-dispatch_queued([{Event, Payload, #{priority := Ep} = Opts} | Events],
-                Man,
-                Prio,
-                Eq)
+dispatch_queued([{Event, Payload, #{priority := Ep} = Opts} | Events], Man, Prio, Eq)
     when Ep >= Prio ->
     dispatch_event(Event, Payload, Man, Opts),
     dispatch_queued(Events, Man, Prio, Eq);
@@ -175,9 +165,6 @@ remote_priority() ->
     end.
 
 most(List) ->
-    Lc = lists:foldl(fun(E1, E2) -> maps:put(E1, maps:get(E1, E2, 0) + 1, E2)
-                     end,
-                     #{},
-                     List),
+    Lc = lists:foldl(fun(E1, E2) -> maps:put(E1, maps:get(E1, E2, 0) + 1, E2) end, #{}, List),
     Ls = lists:sort(fun({_, Ac}, {_, Bc}) -> Ac > Bc end, maps:to_list(Lc)),
     [Value || {Value, _Count} <- Ls].

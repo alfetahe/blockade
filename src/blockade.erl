@@ -2,32 +2,30 @@
 
 -include("blockade_header.hrl").
 
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 %% Public API exports
-%%------------------------------------------------------------------------------
--export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3,
-         get_priority/1, get_handlers/2, get_events/1, remove_handler/2,
-         get_event_queue/1, prune_event_queue/1]).
+%%--------------------------------------------------------------------------------------------------
+-export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3, get_priority/1,
+         get_handlers/2, get_events/1, remove_handler/2, get_event_queue/1, prune_event_queue/1]).
 
 -export_type([event_manager/0]).
 
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 %% Types
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 -type event_manager() :: atom().
 -type event() :: atom().
 -type event_payload() :: term().
 -type priority() :: integer().
--type priority_opts() ::
-    #{reset_after => integer(), discard_events => boolean()}.
+-type priority_opts() :: #{reset_after => integer(), discard_events => boolean()}.
 -type dispatch_opts() ::
     #{priority => priority(),
       members => local | global,
       timeout => integer()}.
 
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 %% Public API
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 -spec add_handler(event_manager(), event()) -> ok.
 add_handler(EventManager, Event) ->
     pg:join(?PROCESS_NAME(EventManager, "pg"), Event, self()).
@@ -46,18 +44,11 @@ get_events(EventManager) ->
     {ok, pg:which_groups(?PROCESS_NAME(EventManager, "pg"))}.
 
 -spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) ->
-                  {ok, event_dispatched} |
-                  {ok, event_queued} |
-                  {ok, event_discarded}.
+                  {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.
 dispatch(EventManager, Event, Payload, Opts) ->
-    gen_server:cast(EventManager,
-                    {dispatch, Event, Payload, format_opts(Opts)}).
+    gen_server:cast(EventManager, {dispatch, Event, Payload, format_opts(Opts)}).
 
--spec dispatch_sync(event_manager(),
-                    event(),
-                    event_payload(),
-                    dispatch_opts()) ->
-                       ok.
+-spec dispatch_sync(event_manager(), event(), event_payload(), dispatch_opts()) -> ok.
 dispatch_sync(EventManager, Event, Payload, Opts) ->
     gen_server:call(EventManager,
                     {dispatch, Event, Payload, format_opts(Opts)},
@@ -66,8 +57,7 @@ dispatch_sync(EventManager, Event, Payload, Opts) ->
 -spec set_priority(event_manager(), priority(), priority_opts()) ->
                       ok | {error, priority_not_integer}.
 set_priority(EventManager, Priority, Opts) when is_integer(Priority) ->
-    Nodes = [node() | erlang:nodes([visible])],
-    gen_server:abcast(Nodes, EventManager, {set_priority, Priority, Opts});
+    gen_server:abcast(get_nodes(), EventManager, {set_priority, Priority, Opts});
 set_priority(_, _, _) ->
     {error, priority_not_integer}.
 
@@ -81,12 +71,16 @@ get_event_queue(EventManager) ->
 
 -spec prune_event_queue(event_manager()) -> ok.
 prune_event_queue(EventManager) ->
-    gen_server:call(EventManager, prune_event_queue).
+    gen_server:abcast(get_nodes(), EventManager, prune_event_queue),
+    ok.
 
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 %% Private functions
-%%------------------------------------------------------------------------------
+%%--------------------------------------------------------------------------------------------------
 
 format_opts(Opts) ->
     Priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY),
     maps:put(priority, Priority, Opts).
+
+get_nodes() ->
+    [node() | erlang:nodes([visible])].
