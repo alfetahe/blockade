@@ -5,7 +5,8 @@
 -export([all/0, init_per_testcase/2, end_per_testcase/2]).
 -export([test_add_handler/1, test_remove_handler/1, test_get_events/1,
          test_get_handlers/1, test_get_priority/1, test_set_priority/1, test_get_event_queue/1,
-         test_prune_event_queue/1, test_dispatch/1, test_dispatch_priority/1]).
+         test_prune_event_queue/1, test_dispatch/1, test_dispatch_priority/1,
+         test_dispatch_sync/1]).
 
 all() ->
     [test_add_handler,
@@ -17,7 +18,8 @@ all() ->
      test_get_event_queue,
      test_prune_event_queue,
      test_dispatch,
-     test_dispatch_priority].
+     test_dispatch_priority,
+     test_dispatch_sync].
 
 init_per_testcase(TestCase, Config) ->
     blockade_sup:start_link(#{name => TestCase}),
@@ -97,7 +99,19 @@ test_dispatch_priority(_Config) ->
     % Need to call one sync event to ensure that the events are dispatched.
     blockade:get_event_queue(test_dispatch_priority),
     [{test_event, first_msg}, {test_event, second_msg}] = get_messages().
-    
+
+test_dispatch_sync(_Config) ->
+    blockade:add_handler(test_dispatch_sync, test_event),
+    {ok, event_dispatched} =
+        blockade:dispatch_sync(test_dispatch_sync, test_event, test_data, #{priority => 5}),
+    ok =
+        receive
+            {test_event, test_data} ->
+                ok
+        after 1000 ->
+            error
+        end.
+
 get_messages() ->
     {messages, Messages} = process_info(self(), messages),
     Messages.

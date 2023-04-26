@@ -58,6 +58,10 @@ handle_cast({set_priority, Plvl, Opts},
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
+handle_call({dispatch, Event, Payload, #{priority := P} = Opts}, _From, State)
+    when P >= State#state.priority ->
+    dispatch_event(Event, Payload, State#state.manager, Opts),
+    {reply, {ok, event_dispatched}, State};
 handle_call({dispatch, Event, Payload, Opts}, _From, State) ->
     {Resp, NewState} = queue_event(Event, Payload, Opts, State),
     {reply, {ok, Resp}, NewState};

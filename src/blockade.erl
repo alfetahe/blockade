@@ -43,12 +43,12 @@ get_handlers(EventManager, Event) ->
 get_events(EventManager) ->
     {ok, pg:which_groups(?PROCESS_NAME(EventManager, "pg"))}.
 
--spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) ->
-                  {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.
+-spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) -> ok.
 dispatch(EventManager, Event, Payload, Opts) ->
     gen_server:cast(EventManager, {dispatch, Event, Payload, format_opts(Opts)}).
 
--spec dispatch_sync(event_manager(), event(), event_payload(), dispatch_opts()) -> ok.
+-spec dispatch_sync(event_manager(), event(), event_payload(), dispatch_opts()) ->
+                       {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.
 dispatch_sync(EventManager, Event, Payload, Opts) ->
     gen_server:call(EventManager,
                     {dispatch, Event, Payload, format_opts(Opts)},
