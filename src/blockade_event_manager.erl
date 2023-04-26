@@ -45,6 +45,8 @@ handle_cast({dispatch, Event, Payload, #{priority := P} = Opts}, State)
 handle_cast({dispatch, Event, Payload, Opts}, State) ->
     {_Resp, NewState} = queue_event(Event, Payload, Opts, State),
     {noreply, NewState};
+handle_cast(prune_event_queue, State) ->
+    {noreply, State#state{event_queue = []}};
 handle_cast({set_priority, Plvl, Opts},
             #state{event_queue = Eq, manager = Man} = State) ->
     Neq = dispatch_queued(lists:reverse(Eq), Man, Plvl, []),
@@ -63,8 +65,6 @@ handle_call(get_priority, _From, #state{priority = Priority} = State) ->
     {reply, {ok, Priority}, State};
 handle_call(get_event_queue, _From, #state{event_queue = Eq} = State) ->
     {reply, {ok, Eq}, State};
-handle_call(prune_event_queue, _From, State) ->
-    {reply, ok, State#state{event_queue = []}};
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_msg}, State}.
 

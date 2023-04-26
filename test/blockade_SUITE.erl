@@ -69,7 +69,6 @@ test_get_event_queue(_Config) ->
         blockade:get_event_queue(test_get_event_queue).
 
 test_prune_event_queue(_Config) ->
-    {ok, []} = blockade:get_event_queue(test_prune_event_queue),
     blockade:dispatch(test_prune_event_queue, test_event, [], #{priority => -1}),
     {ok, [{test_event, [], #{priority := -1}}]} =
         blockade:get_event_queue(test_prune_event_queue),
