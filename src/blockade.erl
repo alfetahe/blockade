@@ -37,13 +37,13 @@ remove_handler(EventManager, Event) ->
     myatom,
     pg:leave(?PROCESS_NAME(EventManager, "pg"), Event, self()).
 
--spec get_handlers(event_manager(), event()) -> [pid()].
+-spec get_handlers(event_manager(), event()) -> {ok, [pid()]}.
 get_handlers(EventManager, Event) ->
-    pg:get_members(?PROCESS_NAME(EventManager, "pg"), Event).
+    {ok, pg:get_members(?PROCESS_NAME(EventManager, "pg"), Event)}.
 
--spec get_events(event_manager()) -> [event()].
+-spec get_events(event_manager()) -> {ok, [event()]}.
 get_events(EventManager) ->
-    pg:which_groups(?PROCESS_NAME(EventManager, "pg")).
+    {ok, pg:which_groups(?PROCESS_NAME(EventManager, "pg"))}.
 
 -spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) ->
                   {ok, event_dispatched} |
@@ -63,10 +63,13 @@ dispatch_sync(EventManager, Event, Payload, Opts) ->
                     {dispatch, Event, Payload, format_opts(Opts)},
                     maps:get(timeout, Opts, ?GEN_CALL_TIMEOUT)).
 
--spec set_priority(event_manager(), priority(), priority_opts()) -> ok.
-set_priority(EventManager, Priority, Opts) ->
+-spec set_priority(event_manager(), priority(), priority_opts()) ->
+                      ok | {error, priority_not_integer}.
+set_priority(EventManager, Priority, Opts) when is_integer(Priority) ->
     Nodes = [node() | erlang:nodes([visible])],
-    gen_server:abcast(Nodes, EventManager, {set_priority, Priority, Opts}).
+    gen_server:abcast(Nodes, EventManager, {set_priority, Priority, Opts});
+set_priority(_, _, _) ->
+    {error, priority_not_integer}.
 
 -spec get_priority(event_manager()) -> {ok, priority()}.
 get_priority(EventManager) ->

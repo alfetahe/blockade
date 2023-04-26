@@ -66,8 +66,9 @@ handle_call(get_priority, _From, #state{priority = Priority} = State) ->
     {reply, {ok, Priority}, State};
 handle_call(get_event_queue, _From, #state{event_queue = Eq} = State) ->
     {reply, {ok, Eq}, State};
-handle_call(get_event_queue, _From, State) ->
-    {reply, ok, State#state{event_queue = []}};
+handle_call(prune_event_queue, _From, #state{discard_events = De} = State) ->
+    Ns = queue_prune(State#state{discard_events = true}),
+    {reply, ok, Ns#state{discard_events = De}};
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_msg}, State}.
 
