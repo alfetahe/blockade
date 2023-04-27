@@ -1,6 +1,6 @@
 -module(blockade).
 
--include("blockade_header.hrl").
+-include("include/blockade_header.hrl").
 
 %%--------------------------------------------------------------------------------------------------
 %% Public API exports

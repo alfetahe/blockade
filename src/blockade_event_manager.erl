@@ -1,6 +1,6 @@
 -module(blockade_event_manager).
 
--include("blockade_header.hrl").
+-include("include/blockade_header.hrl").
 
 -behaviour(gen_server).
 
