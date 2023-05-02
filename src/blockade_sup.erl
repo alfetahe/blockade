@@ -27,5 +27,5 @@ stop(Name) ->
         undefined ->
             {error, not_found};
         SupPid ->
-            exit(SupPid, shutdown)
+            exit(SupPid, normal)
     end.
