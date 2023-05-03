@@ -27,5 +27,7 @@ stop(Name) ->
         undefined ->
             {error, not_found};
         SupPid ->
+            supervisor:terminate_child(SupPid, blockade_event_manager),
+            supervisor:terminate_child(SupPid, blockade_pg),
             exit(SupPid, normal)
     end.
