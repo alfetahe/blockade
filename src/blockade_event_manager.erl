@@ -150,10 +150,16 @@ priority_sync(#state{priority = Lp} = State) ->
              Lp ->
                  Lp;
              Rp ->
-                 % Check once again.
-                 Rp2 = remote_priority(),
-                 [Sp | _] = most([Lp, Rp, Rp2]),
-                 Sp
+                 % If there are only 2 nodes in the cluster then agree with the
+                 % remote priority. Otherwise, check the remote priority again.
+                 case length(erlang:nodes()) of
+                     1 ->
+                         Rp;
+                     _ ->
+                        Rp2 = remote_priority(),
+                        [Sp | _] = most([Lp, Rp, Rp2]),
+                        Sp
+                 end
          end,
     State#state{priority = Ap}.
 

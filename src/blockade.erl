@@ -57,7 +57,8 @@ dispatch_sync(EventManager, Event, Payload, Opts) ->
 -spec set_priority(event_manager(), priority(), priority_opts()) ->
                       ok | {error, priority_not_integer}.
 set_priority(EventManager, Priority, Opts) when is_integer(Priority) ->
-    gen_server:abcast(get_nodes(), EventManager, {set_priority, Priority, Opts});
+    gen_server:abcast(get_nodes(), EventManager, {set_priority, Priority, Opts}),
+    ok;
 set_priority(_, _, _) ->
     {error, priority_not_integer}.
 
