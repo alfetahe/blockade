@@ -14,8 +14,9 @@
         {manager :: blockade:event_manager(),
          event_queue = [] :: list(),
          priority = ?DEFAULT_PRIORITY :: integer(),
+         discard_events = ?DEFAULT_DISCARD_EVENTS,
          schduler_ref = undefined :: reference() | undefined,
-         discard_events = ?DEFAULT_DISCARD_EVENTS}).
+         priority_msg_ref = undefined :: reference() | undefined}).
 
 %%--------------------------------------------------------------------------------------------------
 %% Internal API
@@ -35,8 +36,28 @@ init(Opts) ->
             priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY)},
      {continue, priority_init}}.
 
-handle_continue(priority_init, State) ->
-    {noreply, priority_sync(State)}.
+handle_continue(priority_init, #state{manager = Man} = State) ->
+    Ref = blockade_service:prio_async_msg(Man, blockade_service:rand_node()),
+    {noreply, State#state{priority_msg_ref = Ref}}.
+
+
+
+handle_cast({send_priority_async, Node, Ref}, #state{manager = Man, priority = P} = State) ->
+    gen_server:abcast([Node], Man, {receive_prio_async, Ref, P}),
+    {noreply, State};
+handle_cast({receive_prio_async, Ref, Rp},
+            #state{priority_msg_ref = Pmf, priority = Lp} = State)
+    when Pmf == Ref, (Rp == Lp orelse Rp == undefined) ->
+    {noreply, State#state{priority_msg_ref = undefined}};
+handle_cast({receive_prio_async, Ref, _Rp},
+            #state{priority_msg_ref = Pmf, manager = Man} = State)
+    when Pmf == Ref ->
+    NewRef = blockade_service:prio_async_msg(Man, blockade_service:rand_node()),
+    {noreply, State#state{priority_msg_ref = NewRef}};
+handle_cast({receive_prio_async, _Ref, _Priority}, State) ->
+    {noreply, State};
+
+
 
 handle_cast({dispatch, Event, Payload, #{priority := P} = Opts}, State)
     when P >= State#state.priority ->
@@ -92,18 +113,17 @@ handle_info(_Msg, State) ->
 %%--------------------------------------------------------------------------------------------------
 
 dispatch_event(Event, Payload, Man, Opts) ->
-    M = maps:get(members, Opts, global),
+    Mt = maps:get(members, Opts, global),
     Scope = ?PROCESS_NAME(Man, "pg"),
-    Pids =
-        case M of
-            local ->
-                pg:get_local_members(Scope, Event);
-            global ->
-                pg:get_members(Scope, Event);
-            _ ->
-                throw({error, invalid_members_option})
-        end,
+    Pids = member_pids(Scope, Event, Mt),
     send_messages(Pids, Event, Payload).
+
+member_pids(Scope, Event, MemberType) when MemberType == local ->
+    pg:get_local_members(Scope, Event);
+member_pids(Scope, Event, MemberType) when MemberType == global ->
+    pg:get_members(Scope, Event);
+member_pids(_Scope, _Event, _MemberType) ->
+    throw({error, invalid_members_option}).
 
 send_messages([], _Event, _Payload) ->
     ok;
@@ -148,9 +168,9 @@ queue_prune(State) ->
 priority_sync(#state{priority = Lp, manager = Man} = State) ->
     Ap = case remote_priority(Man) of
              Lp ->
-                Lp;
+                 Lp;
              undefined ->
-                Lp;   
+                 Lp;
              Rp ->
                  % If there are only 2 nodes in the cluster then agree with the
                  % remote priority. Otherwise, check the remote priority again.
@@ -158,9 +178,9 @@ priority_sync(#state{priority = Lp, manager = Man} = State) ->
                      1 ->
                          Rp;
                      _ ->
-                        Rp2 = remote_priority(Man),
-                        [Sp | _] = most([Lp, Rp, Rp2]),
-                        Sp
+                         Rp2 = remote_priority(Man),
+                         [Sp | _] = most([Lp, Rp, Rp2]),
+                         Sp
                  end
          end,
     State#state{priority = Ap}.
@@ -175,11 +195,11 @@ remote_priority(Manager) ->
                    rand:uniform(length(Nodes)), Nodes),
            Rm = gen_server:call({RandNode, Manager}, get_priority, ?GEN_CALL_TIMEOUT),
            case Rm of
-            undefined ->
-                ?DEFAULT_PRIORITY;
-            _ ->
-                gen_server:call({RandNode, Manager}, get_priority, ?GEN_CALL_TIMEOUT)
-            end
+               undefined ->
+                   ?DEFAULT_PRIORITY;
+               _ ->
+                   gen_server:call({RandNode, Manager}, get_priority, ?GEN_CALL_TIMEOUT)
+           end
     end.
 
 most(List) ->
