@@ -145,10 +145,12 @@ queue_prune(#state{priority = P,
 queue_prune(State) ->
     State.
 
-priority_sync(#state{priority = Lp} = State) ->
-    Ap = case remote_priority() of
+priority_sync(#state{priority = Lp, manager = Man} = State) ->
+    Ap = case remote_priority(Man) of
              Lp ->
-                 Lp;
+                Lp;
+             undefined ->
+                Lp;   
              Rp ->
                  % If there are only 2 nodes in the cluster then agree with the
                  % remote priority. Otherwise, check the remote priority again.
@@ -156,14 +158,14 @@ priority_sync(#state{priority = Lp} = State) ->
                      1 ->
                          Rp;
                      _ ->
-                        Rp2 = remote_priority(),
+                        Rp2 = remote_priority(Man),
                         [Sp | _] = most([Lp, Rp, Rp2]),
                         Sp
                  end
          end,
     State#state{priority = Ap}.
 
-remote_priority() ->
+remote_priority(Manager) ->
     Nodes = erlang:nodes(),
     if length(Nodes) == 0 ->
            ?DEFAULT_PRIORITY;
@@ -171,7 +173,13 @@ remote_priority() ->
            RandNode =
                lists:nth(
                    rand:uniform(length(Nodes)), Nodes),
-           gen_server:call({RandNode, ?MODULE}, get_priority, ?GEN_CALL_TIMEOUT)
+           Rm = gen_server:call({RandNode, Manager}, get_priority, ?GEN_CALL_TIMEOUT),
+           case Rm of
+            undefined ->
+                ?DEFAULT_PRIORITY;
+            _ ->
+                gen_server:call({RandNode, Manager}, get_priority, ?GEN_CALL_TIMEOUT)
+            end
     end.
 
 most(List) ->
