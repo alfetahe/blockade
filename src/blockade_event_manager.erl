@@ -5,7 +5,7 @@
 -behaviour(gen_server).
 
 -export([start_link/1]).
--export([init/1, handle_cast/2, handle_call/3, handle_info/2, handle_continue/2]).
+-export([init/1, handle_cast/2, handle_call/3, handle_info/2]).
 
 %%--------------------------------------------------------------------------------------------------
 %% Record definitions
@@ -15,8 +15,7 @@
          event_queue = [] :: list(),
          priority = ?DEFAULT_PRIORITY :: integer(),
          discard_events = ?DEFAULT_DISCARD_EVENTS,
-         schduler_ref = undefined :: reference() | undefined,
-         priority_msg_ref = undefined :: reference() | undefined}).
+         schduler_ref = undefined :: reference() | undefined}).
 
 %%--------------------------------------------------------------------------------------------------
 %% Internal API
@@ -29,35 +28,10 @@ start_link(#{name := Name} = Args) ->
 %%--------------------------------------------------------------------------------------------------
 init(Opts) ->
     erlang:send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
-    erlang:send_after(?PRIORITY_SYNC, self(), queue_sync),
     {ok,
      #state{manager = maps:get(name, Opts),
             discard_events = maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS),
-            priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY)},
-     {continue, priority_init}}.
-
-handle_continue(priority_init, #state{manager = Man} = State) ->
-    Ref = blockade_service:prio_async_msg(Man, blockade_service:rand_node()),
-    {noreply, State#state{priority_msg_ref = Ref}}.
-
-
-
-handle_cast({send_priority_async, Node, Ref}, #state{manager = Man, priority = P} = State) ->
-    gen_server:abcast([Node], Man, {receive_prio_async, Ref, P}),
-    {noreply, State};
-handle_cast({receive_prio_async, Ref, Rp},
-            #state{priority_msg_ref = Pmf, priority = Lp} = State)
-    when Pmf == Ref, (Rp == Lp orelse Rp == undefined) ->
-    {noreply, State#state{priority_msg_ref = undefined}};
-handle_cast({receive_prio_async, Ref, _Rp},
-            #state{priority_msg_ref = Pmf, manager = Man} = State)
-    when Pmf == Ref ->
-    NewRef = blockade_service:prio_async_msg(Man, blockade_service:rand_node()),
-    {noreply, State#state{priority_msg_ref = NewRef}};
-handle_cast({receive_prio_async, _Ref, _Priority}, State) ->
-    {noreply, State};
-
-
+            priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY)}}.
 
 handle_cast({dispatch, Event, Payload, #{priority := P} = Opts}, State)
     when P >= State#state.priority ->
@@ -68,14 +42,16 @@ handle_cast({dispatch, Event, Payload, Opts}, State) ->
     {noreply, NewState};
 handle_cast(prune_event_queue, State) ->
     {noreply, State#state{event_queue = []}};
-handle_cast({set_priority, Plvl, Opts},
-            #state{event_queue = Eq, manager = Man} = State) ->
-    Neq = dispatch_queued(lists:reverse(Eq), Man, Plvl, []),
+handle_cast({set_priority, Priority, Opts},
+            #state{event_queue = Eq, manager = Man} = State) ->         
+    NewEventQueue = dispatch_queued(lists:reverse(Eq), Man, Priority, []),
+    ShedulerRef = case maps:get(keep_old_settings, Opts, false) of true -> State#state.schduler_ref; false -> schedule_reset(Opts) end,
+    DiscardEvents = case maps:get(keep_old_settings, Opts, false) of true -> State#state.discard_events; false -> maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS) end,
     {noreply,
-     State#state{priority = Plvl,
-                 schduler_ref = schedule_reset(Opts),
-                 event_queue = Neq,
-                 discard_events = maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS)}};
+     State#state{priority = Priority,
+                 schduler_ref = ShedulerRef,
+                 event_queue = NewEventQueue,
+                 discard_events = DiscardEvents}};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -96,9 +72,6 @@ handle_call(_Msg, _From, State) ->
 handle_info(queue_prune, State) ->
     erlang:send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
     {noreply, queue_prune(State)};
-handle_info(priority_sync, State) ->
-    erlang:send_after(?PRIORITY_SYNC, self(), priority_sync),
-    {noreply, priority_sync(State)};
 handle_info(reset_priority, #state{event_queue = Eq, manager = Man} = State) ->
     Neq = dispatch_queued(lists:reverse(Eq), Man, ?DEFAULT_PRIORITY, []),
     {noreply,
@@ -148,12 +121,12 @@ dispatch_queued([Event | Events], Man, Prio, Eq) ->
     dispatch_queued(Events, Man, Prio, [Event | Eq]).
 
 schedule_reset(Opts) ->
-    Rs = maps:get(reset_after, Opts, undefined),
-    case Rs of
+    ResetAfter = maps:get(reset_after, Opts, undefined),
+    case ResetAfter of
         undefined ->
             undefined;
         _ ->
-            erlang:send_after(Rs, self(), reset_priority)
+            erlang:send_after(ResetAfter, self(), reset_priority)
     end.
 
 queue_prune(#state{priority = P,
@@ -164,45 +137,3 @@ queue_prune(#state{priority = P,
     State#state{event_queue = Neq};
 queue_prune(State) ->
     State.
-
-priority_sync(#state{priority = Lp, manager = Man} = State) ->
-    Ap = case remote_priority(Man) of
-             Lp ->
-                 Lp;
-             undefined ->
-                 Lp;
-             Rp ->
-                 % If there are only 2 nodes in the cluster then agree with the
-                 % remote priority. Otherwise, check the remote priority again.
-                 case length(erlang:nodes()) of
-                     1 ->
-                         Rp;
-                     _ ->
-                         Rp2 = remote_priority(Man),
-                         [Sp | _] = most([Lp, Rp, Rp2]),
-                         Sp
-                 end
-         end,
-    State#state{priority = Ap}.
-
-remote_priority(Manager) ->
-    Nodes = erlang:nodes(),
-    if length(Nodes) == 0 ->
-           ?DEFAULT_PRIORITY;
-       true ->
-           RandNode =
-               lists:nth(
-                   rand:uniform(length(Nodes)), Nodes),
-           Rm = gen_server:call({RandNode, Manager}, get_priority, ?GEN_CALL_TIMEOUT),
-           case Rm of
-               undefined ->
-                   ?DEFAULT_PRIORITY;
-               _ ->
-                   gen_server:call({RandNode, Manager}, get_priority, ?GEN_CALL_TIMEOUT)
-           end
-    end.
-
-most(List) ->
-    Lc = lists:foldl(fun(E1, E2) -> maps:put(E1, maps:get(E1, E2, 0) + 1, E2) end, #{}, List),
-    Ls = lists:sort(fun({_, Ac}, {_, Bc}) -> Ac > Bc end, maps:to_list(Lc)),
-    [Value || {Value, _Count} <- Ls].
