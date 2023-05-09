@@ -16,7 +16,7 @@ init(Args) ->
     erlang:send_after(?PRIORITY_SYNC, self(), priority_sync),
     {ok, Args, {continue, setup}}.
 
-handle_continue(priority_init, #{name := Manager} = State) ->
+handle_continue(setup, #{name := Manager} = State) ->
     Lp = gen_server:call(Manager, get_priority),
     Np = blockade_service:get_sync_priority(Lp, Manager),
     gen_server:cast(Manager, {set_priority, Np, #{keep_old_settings => true}}),
