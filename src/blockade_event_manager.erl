@@ -43,10 +43,22 @@ handle_cast({dispatch, Event, Payload, Opts}, State) ->
 handle_cast(prune_event_queue, State) ->
     {noreply, State#state{event_queue = []}};
 handle_cast({set_priority, Priority, Opts},
-            #state{event_queue = Eq, manager = Man} = State) ->         
+            #state{event_queue = Eq, manager = Man} = State) ->
     NewEventQueue = dispatch_queued(lists:reverse(Eq), Man, Priority, []),
-    ShedulerRef = case maps:get(keep_old_settings, Opts, false) of true -> State#state.schduler_ref; false -> schedule_reset(Opts) end,
-    DiscardEvents = case maps:get(keep_old_settings, Opts, false) of true -> State#state.discard_events; false -> maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS) end,
+    ShedulerRef =
+        case maps:get(keep_old_settings, Opts, false) of
+            true ->
+                State#state.schduler_ref;
+            false ->
+                schedule_reset(Opts)
+        end,
+    DiscardEvents =
+        case maps:get(keep_old_settings, Opts, false) of
+            true ->
+                State#state.discard_events;
+            false ->
+                maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS)
+        end,
     {noreply,
      State#state{priority = Priority,
                  schduler_ref = ShedulerRef,

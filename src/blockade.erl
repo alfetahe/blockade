@@ -17,7 +17,10 @@
 -type event() :: atom().
 -type event_payload() :: term().
 -type priority() :: integer().
--type priority_opts() :: #{reset_after => integer(), discard_events => boolean(), keep_old_settings => boolean()}.
+-type priority_opts() ::
+    #{reset_after => integer(),
+      discard_events => boolean(),
+      keep_old_settings => boolean()}.
 -type dispatch_opts() ::
     #{priority => priority(),
       members => local | global,

@@ -21,6 +21,15 @@ init_per_group(_GroupName, Config) ->
         [?CT_PEER(["-pa", code:lib_dir(blockade) ++ "/ebin"])
          || _Nr <- lists:seq(1, ?NR_OF_NODES)],
     [unlink(Peer) || {_, Peer, _Node} <- Nodes],
+
+    % Connect all peer nodes to each other.
+    [erpc:call(Node,
+               fun() ->
+                  [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes],
+                  nodes()
+               end)
+     || {_, _Peer, Node} <- Nodes],
+
     [{nodes, Nodes} | Config].
 
 end_per_group(_GroupName, Config) ->
