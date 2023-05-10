@@ -19,7 +19,7 @@ init(Args) ->
 handle_continue(setup, #{name := Manager} = State) ->
     Lp = gen_server:call(Manager, get_priority),
     Np = blockade_service:get_sync_priority(Lp, Manager),
-    gen_server:cast(Manager, {set_priority, Np, #{keep_old_settings => true}}),
+    gen_server:cast(Manager, {set_priority, Np, #{}}),
     {noreply, State}.
 
 handle_cast(_Msg, State) ->
@@ -32,7 +32,7 @@ handle_info(priority_sync, #{name := Manager} = State) ->
     erlang:send_after(?PRIORITY_SYNC, self(), priority_sync),
     Lp = gen_server:call(Manager, get_priority),
     Np = blockade_service:get_sync_priority(Lp, Manager),
-    gen_server:cast(Manager, {set_priority, Np, #{keep_old_settings => true}}),
+    gen_server:cast(Manager, {set_priority, Np, #{}}),
     {noreply, State};
 handle_info(_Msg, State) ->
     {noreply, State}.

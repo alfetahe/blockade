@@ -44,26 +44,11 @@ handle_cast(prune_event_queue, State) ->
     {noreply, State#state{event_queue = []}};
 handle_cast({set_priority, Priority, Opts},
             #state{event_queue = Eq, manager = Man} = State) ->
-    NewEventQueue = dispatch_queued(lists:reverse(Eq), Man, Priority, []),
-    ShedulerRef =
-        case maps:get(keep_old_settings, Opts, false) of
-            true ->
-                State#state.schduler_ref;
-            false ->
-                schedule_reset(Opts)
-        end,
-    DiscardEvents =
-        case maps:get(keep_old_settings, Opts, false) of
-            true ->
-                State#state.discard_events;
-            false ->
-                maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS)
-        end,
     {noreply,
      State#state{priority = Priority,
-                 schduler_ref = ShedulerRef,
-                 event_queue = NewEventQueue,
-                 discard_events = DiscardEvents}};
+                 schduler_ref = get_reset_opt(State, Opts),
+                 event_queue = dispatch_queued(lists:reverse(Eq), Man, Priority, []),
+                 discard_events = get_discard_opt(State, Opts)}};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
@@ -149,3 +134,19 @@ queue_prune(#state{priority = P,
     State#state{event_queue = Neq};
 queue_prune(State) ->
     State.
+
+get_discard_opt(State, Opts) ->
+    case maps:get(discard_events, Opts, undefined) of
+        undefined ->
+            State#state.discard_events;
+        _ ->
+            maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS)
+    end.
+
+get_reset_opt(State, Opts) ->
+    case maps:get(reset_after, Opts, undefined) of
+        undefined ->
+            State#state.schduler_ref;
+        _ ->
+            schedule_reset(Opts)
+    end.
