@@ -5,8 +5,9 @@
 %%--------------------------------------------------------------------------------------------------
 %% Public API exports
 %%--------------------------------------------------------------------------------------------------
--export([add_handler/2, dispatch/4, dispatch_sync/4, set_priority/3, get_priority/1,
-         get_handlers/2, get_events/1, remove_handler/2, get_event_queue/1, prune_event_queue/1]).
+-export([add_handler/2, dispatch/3, dispatch/4, dispatch_sync/3, dispatch_sync/4,
+         set_priority/2, set_priority/3, get_priority/1, get_handlers/2, get_events/1,
+         remove_handler/2, get_event_queue/1, prune_event_queue/1]).
 
 -export_type([event_manager/0]).
 
@@ -43,9 +44,18 @@ get_handlers(EventManager, Event) ->
 get_events(EventManager) ->
     {ok, pg:which_groups(?PROCESS_NAME(EventManager, "pg"))}.
 
+-spec dispatch(event_manager(), event(), event_payload()) -> ok.
+dispatch(EventManager, Event, Payload) ->
+    dispatch(EventManager, Event, Payload, #{}).
+
 -spec dispatch(event_manager(), event(), event_payload(), dispatch_opts()) -> ok.
 dispatch(EventManager, Event, Payload, Opts) ->
     gen_server:cast(EventManager, {dispatch, Event, Payload, format_opts(Opts)}).
+
+-spec dispatch_sync(event_manager(), event(), event_payload()) ->
+                       {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.
+dispatch_sync(EventManager, Event, Payload) ->
+    dispatch_sync(EventManager, Event, Payload, #{}).
 
 -spec dispatch_sync(event_manager(), event(), event_payload(), dispatch_opts()) ->
                        {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.
@@ -53,6 +63,10 @@ dispatch_sync(EventManager, Event, Payload, Opts) ->
     gen_server:call(EventManager,
                     {dispatch, Event, Payload, format_opts(Opts)},
                     maps:get(timeout, Opts, ?GEN_CALL_TIMEOUT)).
+
+-spec set_priority(event_manager(), priority()) -> ok | {error, priority_not_integer}.
+set_priority(EventManager, Priority) ->
+    set_priority(EventManager, Priority, #{}).
 
 -spec set_priority(event_manager(), priority(), priority_opts()) ->
                       ok | {error, priority_not_integer}.
