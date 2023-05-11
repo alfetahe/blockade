@@ -2,7 +2,7 @@
 
 -include("include/blockade_header.hrl").
 
--export([rand_node/0, get_sync_priority/2, member_pids/3, schedule_reset/1,
+-export([rand_node/0, get_sync_priority/2, member_pids/3,
          send_messages/3, dispatch_event/4, queue_event/4, dispatch_queued/4, queue_prune/1,
          get_discard_opt/2, get_reset_opt/2]).
 
@@ -28,39 +28,6 @@ get_sync_priority(Lp, Man) ->
             end
     end.
 
-rand_node() ->
-    Nodes = erlang:nodes(),
-    lists:nth(
-        rand:uniform(length(Nodes)), Nodes).
-
-member_pids(Scope, Event, MemberType) when MemberType == local ->
-    pg:get_local_members(Scope, Event);
-member_pids(Scope, Event, MemberType) when MemberType == global ->
-    pg:get_members(Scope, Event);
-member_pids(_Scope, _Event, _MemberType) ->
-    throw({error, invalid_members_option}).
-
-schedule_reset(Opts) ->
-    ResetAfter = maps:get(reset_after, Opts, undefined),
-    case ResetAfter of
-        undefined ->
-            undefined;
-        _ ->
-            erlang:send_after(ResetAfter, self(), reset_priority)
-    end.
-
-send_messages([], _Event, _Payload) ->
-    ok;
-send_messages([Pid | Pids], Event, Payload) ->
-    Pid ! {Event, Payload},
-    send_messages(Pids, Event, Payload).
-
-dispatch_event(Event, Payload, Man, Opts) ->
-    Mt = maps:get(members, Opts, global),
-    Scope = ?PROCESS_NAME(Man, "pg"),
-    Pids = blockade_service:member_pids(Scope, Event, Mt),
-    blockade_service:send_messages(Pids, Event, Payload).
-
 queue_event(_, _, #{priority := Ep}, #manrec{discard_events = true, priority = P} = State)
     when Ep < P ->
     {event_discarded, State};
@@ -77,6 +44,30 @@ dispatch_queued([{Event, Payload, #{priority := Ep} = Opts} | Events], Man, Prio
 dispatch_queued([Event | Events], Man, Prio, Eq) ->
     dispatch_queued(Events, Man, Prio, [Event | Eq]).
 
+send_messages([], _Event, _Payload) ->
+    ok;
+send_messages([Pid | Pids], Event, Payload) ->
+    Pid ! {Event, Payload},
+    send_messages(Pids, Event, Payload).
+
+dispatch_event(Event, Payload, Man, Opts) ->
+    Mt = maps:get(members, Opts, global),
+    Scope = ?PROCESS_NAME(Man, "pg"),
+    Pids = blockade_service:member_pids(Scope, Event, Mt),
+    blockade_service:send_messages(Pids, Event, Payload).
+
+rand_node() ->
+    Nodes = erlang:nodes(),
+    lists:nth(
+        rand:uniform(length(Nodes)), Nodes).
+
+member_pids(Scope, Event, MemberType) when MemberType == local ->
+    pg:get_local_members(Scope, Event);
+member_pids(Scope, Event, MemberType) when MemberType == global ->
+    pg:get_members(Scope, Event);
+member_pids(_Scope, _Event, _MemberType) ->
+    throw({error, invalid_members_option}).
+    
 queue_prune(#manrec{priority = P, discard_events = true, event_queue = Eq} = State) ->
     Neq = [Ed || {_, _, #{priority := Ep}} = Ed <- Eq, Ep >= P],
     State#manrec{event_queue = Neq};
@@ -96,12 +87,21 @@ get_reset_opt(State, Opts) ->
         undefined ->
             State#manrec.schduler_ref;
         _ ->
-            blockade_service:schedule_reset(Opts)
+            schedule_reset(Opts)
     end.
 
 %%------------------------------------------------------------------------------
 %% Internal functions.
 %%------------------------------------------------------------------------------
+
+schedule_reset(Opts) ->
+    ResetAfter = maps:get(reset_after, Opts, undefined),
+    case ResetAfter of
+        undefined ->
+            undefined;
+        _ ->
+            erlang:send_after(ResetAfter, self(), reset_priority)
+    end.
 
 remote_priority(Manager) ->
     Nodes = erlang:nodes(),

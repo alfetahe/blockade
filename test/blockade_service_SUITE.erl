@@ -8,9 +8,9 @@
 
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
          end_per_testcase/2]).
--export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1]).
+-export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1, test_member_pids/1]).
 
--define(NR_OF_NODES, 2).
+-define(NR_OF_NODES, 3).
 
 all() ->
     [{group, blockade_service_group}].
@@ -18,7 +18,7 @@ all() ->
 groups() ->
     [{blockade_service_group,
       [],
-      [test_get_reset_opt, test_get_discard_opt, test_queue_prune]}].
+      [test_get_reset_opt, test_get_discard_opt, test_queue_prune, test_member_pids]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -40,6 +40,8 @@ end_per_group(_GroupName, Config) ->
     [peer:stop(Peer) || {_, Peer, _Node} <- ?config(nodes, Config)].
 
 init_per_testcase(TestCase, Config) ->
+    blockade_sup:start_link(#{name => TestCase}),
+
     [erpc:call(Node,
                fun() ->
                   {ok, SupPid} = blockade_sup:start_link(#{name => TestCase}),
@@ -49,6 +51,7 @@ init_per_testcase(TestCase, Config) ->
     Config.
 
 end_per_testcase(TestCase, Config) ->
+    blockade_sup:stop(TestCase),
     [rpc:call(Node, blockade_sup, stop, [TestCase])
      || {_, _Peer, Node} <- ?config(nodes, Config)].
 
@@ -88,3 +91,17 @@ test_queue_prune(_Config) ->
         blockade_service:queue_prune(State2),
     State3 = #manrec{priority = -150, discard_events = true, event_queue = Events},
     State3 = blockade_service:queue_prune(State3).
+    
+test_member_pids(Config) ->
+    timer:sleep(1000),
+    Self = self(),
+    Scope = ?PROCESS_NAME(test_member_pids, "pg"),
+    % Here is problem the fun () returns and kills the process who registers under the handler. We need to create
+    % one test genserver spawn the process and use it to register the handler.
+    Responsid = [erpc:call(Node, fun() -> blockade:add_handler(test_member_pids, test_event), pg:get_members(Scope, test_event) end) || {_, _, Node} <- ?config(nodes, Config)],
+    ct:pal("RESPONSIIID ~p~n", [Responsid]),
+    timer:sleep(1000),
+    [] = blockade_service:member_pids(Scope, test_event, local),
+    blockade:add_handler(test_member_pids, test_event),
+    [Self] = blockade_service:member_pids(Scope, test_event, local),
+    ct:pal("NEEDS TO INCLUDE THREEEE! ~p~n", [pg:get_members(Scope, test_event)]).
