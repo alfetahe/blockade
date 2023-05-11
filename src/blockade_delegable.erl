@@ -17,9 +17,10 @@ init(Args) ->
     {ok, Args, {continue, setup}}.
 
 handle_continue(setup, #{name := Manager} = State) ->
-    Lp = gen_server:call(Manager, get_priority),
-    Np = blockade_service:get_sync_priority(Lp, Manager),
-    gen_server:cast(Manager, {set_priority, Np, #{}}),
+    % TODO: This is giving errors in some tests and need to rethink the whole logic
+    %Lp = gen_server:call(Manager, get_priority),
+    %Np = blockade_service:get_sync_priority(Lp, Manager),
+    %gen_server:cast(Manager, {set_priority, Np, #{}}),
     {noreply, State}.
 
 handle_cast(_Msg, State) ->

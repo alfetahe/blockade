@@ -9,20 +9,19 @@
          set_priority/2, set_priority/3, get_priority/1, get_handlers/2, get_events/1,
          remove_handler/2, get_event_queue/1, prune_event_queue/1]).
 
--export_type([event_manager/0]).
+-export_type([event_manager/0, queued_event/0]).
 
 %%------------------------------------------------------------------------------
 %% Types
 %%------------------------------------------------------------------------------
 -type event_manager() :: atom().
 -type event() :: atom().
+-type queued_event() :: {event(), event_payload(), dispatch_opts()}.
 -type event_payload() :: term().
 -type priority() :: integer().
 -type priority_opts() :: #{reset_after => integer(), discard_events => boolean()}.
 -type dispatch_opts() ::
-    #{priority => priority(),
-      members => local | global,
-      timeout => integer()}.
+    #{priority => priority(), members => local | global, timeout => integer()}.
 
 %%------------------------------------------------------------------------------
 %% Public API

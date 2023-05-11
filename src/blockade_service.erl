@@ -77,10 +77,7 @@ dispatch_queued([{Event, Payload, #{priority := Ep} = Opts} | Events], Man, Prio
 dispatch_queued([Event | Events], Man, Prio, Eq) ->
     dispatch_queued(Events, Man, Prio, [Event | Eq]).
 
-queue_prune(#manrec{priority = P,
-                    discard_events = true,
-                    event_queue = Eq} =
-                State) ->
+queue_prune(#manrec{priority = P, discard_events = true, event_queue = Eq} = State) ->
     Neq = [Ed || {_, _, #{priority := Ep}} = Ed <- Eq, Ep >= P],
     State#manrec{event_queue = Neq};
 queue_prune(State) ->
@@ -115,7 +112,10 @@ remote_priority(Manager) ->
            case erpc:call(RandNode, fun() -> whereis(Manager) end) of
                undefined ->
                    ?DEFAULT_PRIORITY;
-               _ ->
+               Res ->
+                   ct:pal("REMOTE NODE ~p~n", [RandNode]),
+                   ct:pal("LOCAL NODE ~p~n", [node()]),
+                   ct:pal("GEN PIDD ~p~n", [Res]),
                    query_remote_priority(Manager, RandNode)
            end
     end.

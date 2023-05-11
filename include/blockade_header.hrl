@@ -14,7 +14,7 @@
 %%------------------------------------------------------------------------------
 -record(manrec,
         {manager :: blockade:event_manager(),
-         event_queue = [] :: list(),
+         event_queue = [] :: [blockade:queued_event()],
          priority = ?DEFAULT_PRIORITY :: integer(),
          discard_events = ?DEFAULT_DISCARD_EVENTS,
          schduler_ref = undefined :: reference() | undefined}).

@@ -65,8 +65,6 @@ handle_info(reset_priority, #manrec{event_queue = Eq, manager = Man} = State) ->
     Neq = blockade_service:dispatch_queued(
               lists:reverse(Eq), Man, ?DEFAULT_PRIORITY, []),
     {noreply,
-     State#manrec{priority = ?DEFAULT_PRIORITY,
-                  schduler_ref = undefined,
-                  event_queue = Neq}};
+     State#manrec{priority = ?DEFAULT_PRIORITY, schduler_ref = undefined, event_queue = Neq}};
 handle_info(_Msg, State) ->
     {noreply, State}.
