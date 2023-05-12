@@ -54,7 +54,7 @@ send_messages([], _Event, _Payload) ->
     ok;
 send_messages([Pid | Pids], Event, Payload) ->
     Pid ! {Event, Payload},
-    send_messages(Pids, Event, Payload).    
+    send_messages(Pids, Event, Payload).
 
 rand_node() ->
     Nodes = erlang:nodes(),

@@ -9,7 +9,7 @@
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
          end_per_testcase/2]).
 -export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1,
-         test_member_pids/1, test_rand_node/1, test_send_messages/1]).
+         test_member_pids/1, test_rand_node/1, test_send_messages/1, test_dispatch_event/1]).
 
 -define(NR_OF_NODES, 3).
 
@@ -19,7 +19,13 @@ all() ->
 groups() ->
     [{blockade_service_group,
       [],
-      [test_get_reset_opt, test_get_discard_opt, test_queue_prune, test_member_pids, test_rand_node, test_send_messages]}].
+      [test_get_reset_opt,
+       test_get_discard_opt,
+       test_queue_prune,
+       test_member_pids,
+       test_rand_node,
+       test_send_messages,
+       test_dispatch_event]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -97,32 +103,28 @@ test_queue_prune(_Config) ->
 test_member_pids(Config) ->
     Self = self(),
     Scope = ?PROCESS_NAME(test_member_pids, "pg"),
-    [erpc:call(Node,
-               fun() ->
-                  gen_server:call(blockade_test_worker, {add_handler, test_member_pids, test_event})
-               end)
-     || {_, _, Node} <- ?config(nodes, Config)],
     [] = blockade_service:member_pids(Scope, test_event, local),
-    blockade:add_handler(test_member_pids, test_event),
+    blockade_test_helper:add_handler_nodes(test_member_pids,
+                                           test_event,
+                                           ?config(nodes, Config)),
     [Self] = blockade_service:member_pids(Scope, test_event, local),
     GlobalMembers = blockade_service:member_pids(Scope, test_event, global),
     ?NR_OF_NODES + 1 = length(GlobalMembers),
     true = lists:all(fun(Pid) -> is_pid(Pid) end, GlobalMembers).
 
 test_rand_node(_Config) ->
-    true = lists:member(blockade_service:rand_node(), nodes()).
+    true =
+        lists:member(
+            blockade_service:rand_node(), nodes()).
 
 test_send_messages(Config) ->
     Pid = self(),
     Fun = fun() -> blockade_service:send_messages([Pid], test_event, test_payload) end,
     Fun(),
     [erpc:call(Node, Fun) || {_, _, Node} <- ?config(nodes, Config)],
-    lists:all(fun(Msg) -> Msg =:= {test_event,test_payload} end, all_messages([])),
+    lists:all(fun(Msg) -> Msg =:= {test_event, test_payload} end,
+              blockade_test_worker:all_messages([])),
     ok = blockade_service:send_messages([], test_event, test_payload).
 
-all_messages(Messages) ->
-    receive
-        Msg -> all_messages([Msg | Messages])
-    after 0 -> 
-        Messages
-    end.
+test_dispatch_event(_Config) ->
+    ok.
