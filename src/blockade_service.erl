@@ -2,9 +2,9 @@
 
 -include("include/blockade_header.hrl").
 
--export([rand_node/0, get_sync_priority/2, member_pids/3,
-         send_messages/3, dispatch_event/4, queue_event/4, dispatch_queued/4, queue_prune/1,
-         get_discard_opt/2, get_reset_opt/2]).
+-export([rand_node/0, get_sync_priority/2, member_pids/3, send_messages/3,
+         dispatch_event/4, queue_event/4, dispatch_queued/4, queue_prune/1, get_discard_opt/2,
+         get_reset_opt/2]).
 
 %%------------------------------------------------------------------------------
 %% Public functions.
@@ -67,7 +67,7 @@ member_pids(Scope, Event, MemberType) when MemberType == global ->
     pg:get_members(Scope, Event);
 member_pids(_Scope, _Event, _MemberType) ->
     throw({error, invalid_members_option}).
-    
+
 queue_prune(#manrec{priority = P, discard_events = true, event_queue = Eq} = State) ->
     Neq = [Ed || {_, _, #{priority := Ep}} = Ed <- Eq, Ep >= P],
     State#manrec{event_queue = Neq};

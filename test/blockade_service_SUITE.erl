@@ -8,7 +8,8 @@
 
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
          end_per_testcase/2]).
--export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1, test_member_pids/1]).
+-export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1,
+         test_member_pids/1]).
 
 -define(NR_OF_NODES, 3).
 
@@ -26,11 +27,12 @@ init_per_group(_GroupName, Config) ->
          || _Nr <- lists:seq(1, ?NR_OF_NODES)],
     [unlink(Peer) || {_, Peer, _Node} <- Nodes],
 
-    % Connect all peer nodes to each other.
+    % Connect all peer nodes to each other and start test worker.
     [erpc:call(Node,
                fun() ->
-                  [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes],
-                  nodes()
+                  {ok, TestWorkerPid} = blockade_test_worker:start_link([]),
+                  unlink(TestWorkerPid),
+                  [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes]
                end)
      || {_, _Peer, Node} <- Nodes],
 
@@ -91,17 +93,18 @@ test_queue_prune(_Config) ->
         blockade_service:queue_prune(State2),
     State3 = #manrec{priority = -150, discard_events = true, event_queue = Events},
     State3 = blockade_service:queue_prune(State3).
-    
+
 test_member_pids(Config) ->
-    timer:sleep(1000),
     Self = self(),
     Scope = ?PROCESS_NAME(test_member_pids, "pg"),
-    % Here is problem the fun () returns and kills the process who registers under the handler. We need to create
-    % one test genserver spawn the process and use it to register the handler.
-    Responsid = [erpc:call(Node, fun() -> blockade:add_handler(test_member_pids, test_event), pg:get_members(Scope, test_event) end) || {_, _, Node} <- ?config(nodes, Config)],
-    ct:pal("RESPONSIIID ~p~n", [Responsid]),
-    timer:sleep(1000),
+    [erpc:call(Node,
+               fun() ->
+                  gen_server:call(blockade_test_worker, {add_handler, test_member_pids, test_event})
+               end)
+     || {_, _, Node} <- ?config(nodes, Config)],
     [] = blockade_service:member_pids(Scope, test_event, local),
     blockade:add_handler(test_member_pids, test_event),
     [Self] = blockade_service:member_pids(Scope, test_event, local),
-    ct:pal("NEEDS TO INCLUDE THREEEE! ~p~n", [pg:get_members(Scope, test_event)]).
+    GlobalMembers = blockade_service:member_pids(Scope, test_event, global),
+    ?NR_OF_NODES + 1 = length(GlobalMembers),
+    true = lists:all(fun(Pid) -> is_pid(Pid) end, GlobalMembers).
