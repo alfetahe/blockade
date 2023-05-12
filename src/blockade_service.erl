@@ -44,17 +44,17 @@ dispatch_queued([{Event, Payload, #{priority := Ep} = Opts} | Events], Man, Prio
 dispatch_queued([Event | Events], Man, Prio, Eq) ->
     dispatch_queued(Events, Man, Prio, [Event | Eq]).
 
-send_messages([], _Event, _Payload) ->
-    ok;
-send_messages([Pid | Pids], Event, Payload) ->
-    Pid ! {Event, Payload},
-    send_messages(Pids, Event, Payload).
-
 dispatch_event(Event, Payload, Man, Opts) ->
     Mt = maps:get(members, Opts, global),
     Scope = ?PROCESS_NAME(Man, "pg"),
     Pids = blockade_service:member_pids(Scope, Event, Mt),
     blockade_service:send_messages(Pids, Event, Payload).
+
+send_messages([], _Event, _Payload) ->
+    ok;
+send_messages([Pid | Pids], Event, Payload) ->
+    Pid ! {Event, Payload},
+    send_messages(Pids, Event, Payload).    
 
 rand_node() ->
     Nodes = erlang:nodes(),

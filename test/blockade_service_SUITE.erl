@@ -9,7 +9,7 @@
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
          end_per_testcase/2]).
 -export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1,
-         test_member_pids/1]).
+         test_member_pids/1, test_rand_node/1]).
 
 -define(NR_OF_NODES, 3).
 
@@ -19,7 +19,7 @@ all() ->
 groups() ->
     [{blockade_service_group,
       [],
-      [test_get_reset_opt, test_get_discard_opt, test_queue_prune, test_member_pids]}].
+      [test_get_reset_opt, test_get_discard_opt, test_queue_prune, test_member_pids, test_rand_node]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -108,3 +108,6 @@ test_member_pids(Config) ->
     GlobalMembers = blockade_service:member_pids(Scope, test_event, global),
     ?NR_OF_NODES + 1 = length(GlobalMembers),
     true = lists:all(fun(Pid) -> is_pid(Pid) end, GlobalMembers).
+
+test_rand_node(_Config) ->
+    true = lists:member(blockade_service:rand_node(), nodes()).   
