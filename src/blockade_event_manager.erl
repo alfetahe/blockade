@@ -23,7 +23,9 @@ init(Opts) ->
     {ok,
      #manst{manager = maps:get(name, Opts),
             discard_events = maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS),
-            priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY), emitted_priorites = []}}.
+            priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY),
+            emitted_priorites = [],
+            priority_confirmed = blockade_service:startup_prio_confr(Opts)}}.
 
 handle_cast({dispatch, Event, Payload, #{priority := P} = Opts}, State)
     when P >= State#manst.priority ->
@@ -63,9 +65,14 @@ handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_msg}, State}.
 
 handle_info(sync_priority, #manst{emitted_priorites = Ep, priority = Priority} = State) ->
-    SelectedPrio = blockade_service:sync_priority(Ep, Priority),
+    SyncPrio = blockade_service:sync_priority(Ep, Priority),
     erlang:send_after(?PRIORITY_SYNC_SCHEDULE, self(), sync_priority),
-    {noreply, State#manst{emitted_priorites = [], priority = SelectedPrio}};
+    {noreply,
+     State#manst{emitted_priorites = [], priority = SyncPrio, priority_confirmed = true}};
+handle_info(emit_priority, #manst{priority_confirmed = Confirm} = State)
+    when Confirm =:= false ->
+    erlang:send_after(?PRIORITY_EMIT_SCHEDULE, self(), emit_priority),
+    {noreply, State};
 handle_info(emit_priority, #manst{priority = Priority, manager = Man} = State) ->
     blockade_service:emit_priority(Man, Priority),
     erlang:send_after(?PRIORITY_EMIT_SCHEDULE, self(), emit_priority),

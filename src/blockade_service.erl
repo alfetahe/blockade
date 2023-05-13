@@ -4,7 +4,7 @@
 
 -export([rand_node/0, member_pids/3, send_messages/3, dispatch_event/4, queue_event/4,
          dispatch_queued/4, queue_prune/1, get_discard_opt/2, get_reset_opt/2, emit_priority/2,
-         sync_priority/2]).
+         sync_priority/2, startup_prio_confr/1]).
 
 %%------------------------------------------------------------------------------
 %% Public functions.
@@ -19,6 +19,9 @@ sync_priority(Priorities, _Default) ->
 emit_priority(Man, Priority) ->
     gen_server:abcast(nodes(), Man, {priority_emit, Priority}),
     ok.
+
+startup_prio_confr(Opts) ->
+    maps:get(priority, Opts, false) =/= false orelse length(nodes()) < 0.
 
 dispatch_queued([], _, _, Eq) ->
     lists:reverse(Eq);
