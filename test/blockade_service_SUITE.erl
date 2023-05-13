@@ -36,7 +36,7 @@ init_per_group(_GroupName, Config) ->
     % Connect all peer nodes to each other and start test worker.
     [erpc:call(Node,
                fun() ->
-                  {ok, TestWorkerPid} = blockade_test_worker:start_link([]),
+                  {ok, TestWorkerPid} = blockade_test_helper:start_link([]),
                   unlink(TestWorkerPid),
                   [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes]
                end)
@@ -123,8 +123,25 @@ test_send_messages(Config) ->
     Fun(),
     [erpc:call(Node, Fun) || {_, _, Node} <- ?config(nodes, Config)],
     lists:all(fun(Msg) -> Msg =:= {test_event, test_payload} end,
-              blockade_test_worker:all_messages([])),
+              blockade_test_helper:all_messages([])),
     ok = blockade_service:send_messages([], test_event, test_payload).
 
-test_dispatch_event(_Config) ->
-    ok.
+test_dispatch_event(Config) ->
+    Nodes = [node() | ?config(nodes, Config)],
+    blockade_test_helper:start_pg_nodes(test_dispatch_event, Nodes),
+    blockade_test_helper:add_handler_nodes(test_dispatch_event, test_event, Nodes),
+    ExecFun =
+        fun() ->
+           blockade_service:dispatch_event(test_event,
+                                           {test_dispatch_event, self()},
+                                           test_dispatch_event,
+                                           #{members => global}),
+           receive
+               test_dispatch_event ->
+                   ok
+           after 1000 ->
+               false
+           end
+        end,
+    Responses = [erpc:call(Node, ExecFun) || {_, _, Node} <- Nodes],
+    true = lists:all(fun(Resp) -> Resp =:= ok end, Responses).
