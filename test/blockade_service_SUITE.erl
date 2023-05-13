@@ -10,7 +10,7 @@
          end_per_testcase/2]).
 -export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1,
          test_member_pids/1, test_rand_node/1, test_send_messages/1, test_dispatch_event/1,
-         test_queue_event/1]).
+         test_queue_event/1, test_dispatch_queued/1]).
 
 -define(NR_OF_NODES, 3).
 
@@ -27,7 +27,8 @@ groups() ->
        test_rand_node,
        test_send_messages,
        test_dispatch_event,
-       test_queue_event]}].
+       test_queue_event,
+       test_dispatch_queued]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -170,5 +171,19 @@ test_queue_event(_Config) ->
     {event_queued, #manrec{event_queue = [{E, P, #{priority := 15}} | Eq]}} =
         blockade_service:queue_event(E, P, #{priority => 15}, S3),
     {event_queued, #manrec{event_queue = [{E, P, #{priority := 1000}} | Eq]}} =
-        blockade_service:queue_event(E, P, #{priority => 1000}, S3),
-    ok.
+        blockade_service:queue_event(E, P, #{priority => 1000}, S3).
+
+test_dispatch_queued(Config) ->
+    Nodes = [node() | ?config(nodes, Config)],
+    blockade_test_helper:start_pg_nodes(test_dispatch_queued, Nodes),
+    blockade_test_helper:add_handler_nodes(test_dispatch_queued, test_event, Nodes),
+    Eq = [{test_event, test_payload, #{priority => 0, members => global}},
+          {test_event, test_payload, #{priority => 1, members => global}},
+          {test_event, test_payload, #{priority => 2, members => global}},
+          {test_event, test_payload, #{priority => 3, members => global}}],
+    Req1 = lists:reverse(Eq),
+    Req1 = blockade_service:dispatch_queued([], any, any, Eq),
+    Req2 = lists:sublist(Eq, 1),
+    Req2 = blockade_service:dispatch_queued(Eq, test_dispatch_queued, 1, []),
+    Req3 = lists:sublist(Eq, 2),
+    Req3 = blockade_service:dispatch_queued(Eq, test_dispatch_queued, 2, []).

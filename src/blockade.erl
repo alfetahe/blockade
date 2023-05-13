@@ -31,7 +31,6 @@ add_handler(EventManager, Event) ->
 
 -spec remove_handler(event_manager(), event()) -> ok | not_joined.
 remove_handler(EventManager, Event) ->
-    myatom,
     pg:leave(?PROCESS_NAME(EventManager, "pg"), Event, self()).
 
 -spec get_handlers(event_manager(), event()) -> {ok, [pid()]}.
