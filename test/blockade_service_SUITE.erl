@@ -10,7 +10,7 @@
          end_per_testcase/2]).
 -export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1,
          test_member_pids/1, test_rand_node/1, test_send_messages/1, test_dispatch_event/1,
-         test_queue_event/1, test_dispatch_queued/1, test_startup_prio_confr/1]).
+         test_queue_event/1, test_dispatch_queued/1, test_startup_prio_confr/1, test_emit_priority/1, test_sync_priority/1]).
 
 -define(NR_OF_NODES, 3).
 
@@ -29,7 +29,8 @@ groups() ->
        test_dispatch_event,
        test_queue_event,
        test_dispatch_queued,
-       test_startup_prio_confr]}].
+       test_startup_prio_confr,
+       test_emit_priority, test_sync_priority]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -193,3 +194,9 @@ test_dispatch_queued(Config) ->
 test_startup_prio_confr(_Config) ->
     false = blockade_service:startup_prio_confr(#{}),
     true = blockade_service:startup_prio_confr(#{priority => 0}).
+
+test_emit_priority(_Config) ->
+    ok.
+
+test_sync_priority(_Config) ->
+    ok.
