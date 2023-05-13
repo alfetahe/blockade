@@ -61,6 +61,8 @@ handle_call(get_priority, _From, #manst{priority = Priority} = State) ->
     {reply, {ok, Priority}, State};
 handle_call(get_event_queue, _From, #manst{event_queue = Eq} = State) ->
     {reply, {ok, Eq}, State};
+handle_call(get_state, _From, State) ->
+    {reply, State, State};
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_msg}, State}.
 
