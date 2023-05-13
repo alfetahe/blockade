@@ -28,13 +28,6 @@ get_sync_priority(Lp, Man) ->
             end
     end.
 
-queue_event(_, _, #{priority := Ep}, #manrec{discard_events = true, priority = P} = State)
-    when Ep < P ->
-    {event_discarded, State};
-queue_event(Event, Payload, Opts, State) ->
-    Neq = [{Event, Payload, Opts} | State#manrec.event_queue],
-    {event_queued, State#manrec{event_queue = Neq}}.
-
 dispatch_queued([], _, _, Eq) ->
     lists:reverse(Eq);
 dispatch_queued([{Event, Payload, #{priority := Ep} = Opts} | Events], Man, Prio, Eq)
@@ -43,6 +36,13 @@ dispatch_queued([{Event, Payload, #{priority := Ep} = Opts} | Events], Man, Prio
     dispatch_queued(Events, Man, Prio, Eq);
 dispatch_queued([Event | Events], Man, Prio, Eq) ->
     dispatch_queued(Events, Man, Prio, [Event | Eq]).
+
+queue_event(_, _, #{priority := Ep}, #manrec{discard_events = true, priority = P} = State)
+    when Ep < P ->
+    {event_discarded, State};
+queue_event(Event, Payload, Opts, State) ->
+    Neq = [{Event, Payload, Opts} | State#manrec.event_queue],
+    {event_queued, State#manrec{event_queue = Neq}}.
 
 dispatch_event(Event, Payload, Man, Opts) ->
     Mt = maps:get(members, Opts, global),

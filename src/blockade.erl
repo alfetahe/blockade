@@ -20,8 +20,7 @@
 -type event_payload() :: term().
 -type priority() :: integer().
 -type priority_opts() :: #{reset_after => integer(), discard_events => boolean()}.
--type dispatch_opts() ::
-    #{priority => priority(), members => local | global, timeout => integer()}.
+-type dispatch_opts() :: #{priority => priority(), members => local | global}.
 
 %%------------------------------------------------------------------------------
 %% Public API
@@ -61,7 +60,7 @@ dispatch_sync(EventManager, Event, Payload) ->
 dispatch_sync(EventManager, Event, Payload, Opts) ->
     gen_server:call(EventManager,
                     {dispatch, Event, Payload, format_opts(Opts)},
-                    maps:get(timeout, Opts, ?GEN_CALL_TIMEOUT)).
+                    ?GEN_CALL_TIMEOUT).
 
 -spec set_priority(event_manager(), priority()) -> ok | {error, priority_not_integer}.
 set_priority(EventManager, Priority) ->
