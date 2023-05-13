@@ -67,21 +67,21 @@ end_per_testcase(TestCase, Config) ->
      || {_, _Peer, Node} <- ?config(nodes, Config)].
 
 test_get_reset_opt(_Config) ->
-    undefined = blockade_service:get_reset_opt(#manrec{}, #{}),
-    true = is_reference(blockade_service:get_reset_opt(#manrec{}, #{reset_after => 1})),
+    undefined = blockade_service:get_reset_opt(#manst{}, #{}),
+    true = is_reference(blockade_service:get_reset_opt(#manst{}, #{reset_after => 1})),
     true =
-        is_reference(blockade_service:get_reset_opt(#manrec{schduler_ref = test},
+        is_reference(blockade_service:get_reset_opt(#manst{schduler_ref = test},
                                                     #{reset_after => 2})),
-    test = blockade_service:get_reset_opt(#manrec{schduler_ref = test}, #{}).
+    test = blockade_service:get_reset_opt(#manst{schduler_ref = test}, #{}).
 
 test_get_discard_opt(_Config) ->
-    ?DEFAULT_DISCARD_EVENTS = blockade_service:get_discard_opt(#manrec{}, #{}),
-    true = blockade_service:get_discard_opt(#manrec{}, #{discard_events => true}),
-    false = blockade_service:get_discard_opt(#manrec{}, #{discard_events => false}),
+    ?DEFAULT_DISCARD_EVENTS = blockade_service:get_discard_opt(#manst{}, #{}),
+    true = blockade_service:get_discard_opt(#manst{}, #{discard_events => true}),
+    false = blockade_service:get_discard_opt(#manst{}, #{discard_events => false}),
     true =
-        blockade_service:get_discard_opt(#manrec{discard_events = false},
+        blockade_service:get_discard_opt(#manst{discard_events = false},
                                          #{discard_events => true}),
-    true = blockade_service:get_discard_opt(#manrec{discard_events = true}, #{}).
+    true = blockade_service:get_discard_opt(#manst{discard_events = true}, #{}).
 
 test_queue_prune(_Config) ->
     Events =
@@ -90,17 +90,17 @@ test_queue_prune(_Config) ->
          {test, "data2", #{priority => 2}},
          {test, "data3", #{priority => 3}},
          {test, "data3_ex", #{priority => 3}}],
-    State1 = #manrec{priority = 3, discard_events = false, event_queue = Events},
+    State1 = #manst{priority = 3, discard_events = false, event_queue = Events},
     State1 = blockade_service:queue_prune(State1),
-    #manrec{priority = -15} = blockade_service:queue_prune(State1#manrec{priority = -15}),
-    State2 = #manrec{priority = 2, discard_events = true, event_queue = Events},
-    #manrec{priority = 2, discard_events = true,
-            event_queue =
-                [{test, "data2", #{priority := 2}},
-                 {test, "data3", #{priority := 3}},
-                 {test, "data3_ex", #{priority := 3}}]} =
+    #manst{priority = -15} = blockade_service:queue_prune(State1#manst{priority = -15}),
+    State2 = #manst{priority = 2, discard_events = true, event_queue = Events},
+    #manst{priority = 2, discard_events = true,
+           event_queue =
+               [{test, "data2", #{priority := 2}},
+                {test, "data3", #{priority := 3}},
+                {test, "data3_ex", #{priority := 3}}]} =
         blockade_service:queue_prune(State2),
-    State3 = #manrec{priority = -150, discard_events = true, event_queue = Events},
+    State3 = #manst{priority = -150, discard_events = true, event_queue = Events},
     State3 = blockade_service:queue_prune(State3).
 
 test_member_pids(Config) ->
@@ -153,24 +153,24 @@ test_queue_event(_Config) ->
     E = test_event,
     P = test_payload,
     Eq = [{E, P, #{priority => 1, members => global}}],
-    S1 = #manrec{event_queue = Eq, discard_events = true, priority = 0},
+    S1 = #manst{event_queue = Eq, discard_events = true, priority = 0},
     {event_discarded, S1} = blockade_service:queue_event(E, P, #{priority => -1}, S1),
-    {event_queued, #manrec{event_queue = [{E, P, #{priority := 0}} | Eq]}} =
+    {event_queued, #manst{event_queue = [{E, P, #{priority := 0}} | Eq]}} =
         blockade_service:queue_event(E, P, #{priority => 0}, S1),
-    {event_queued, #manrec{event_queue = [{E, P, #{priority := 1}} | Eq]}} =
+    {event_queued, #manst{event_queue = [{E, P, #{priority := 1}} | Eq]}} =
         blockade_service:queue_event(E, P, #{priority => 1}, S1),
-    S2 = S1#manrec{priority = -100},
+    S2 = S1#manst{priority = -100},
     {event_discarded, S2} = blockade_service:queue_event(E, P, #{priority => -101}, S2),
-    {event_queued, #manrec{event_queue = [{E, P, #{priority := 100}} | Eq]}} =
+    {event_queued, #manst{event_queue = [{E, P, #{priority := 100}} | Eq]}} =
         blockade_service:queue_event(E, P, #{priority => 100}, S2),
-    {event_queued, #manrec{event_queue = [{E, P, #{priority := -100}} | Eq]}} =
+    {event_queued, #manst{event_queue = [{E, P, #{priority := -100}} | Eq]}} =
         blockade_service:queue_event(E, P, #{priority => -100}, S2),
-    S3 = S2#manrec{priority = 999, discard_events = false},
-    {event_queued, #manrec{event_queue = [{E, P, #{priority := -15}} | Eq]}} =
+    S3 = S2#manst{priority = 999, discard_events = false},
+    {event_queued, #manst{event_queue = [{E, P, #{priority := -15}} | Eq]}} =
         blockade_service:queue_event(E, P, #{priority => -15}, S3),
-    {event_queued, #manrec{event_queue = [{E, P, #{priority := 15}} | Eq]}} =
+    {event_queued, #manst{event_queue = [{E, P, #{priority := 15}} | Eq]}} =
         blockade_service:queue_event(E, P, #{priority => 15}, S3),
-    {event_queued, #manrec{event_queue = [{E, P, #{priority := 1000}} | Eq]}} =
+    {event_queued, #manst{event_queue = [{E, P, #{priority := 1000}} | Eq]}} =
         blockade_service:queue_event(E, P, #{priority => 1000}, S3).
 
 test_dispatch_queued(Config) ->
