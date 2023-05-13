@@ -51,11 +51,12 @@ end_per_group(_GroupName, Config) ->
     [peer:stop(Peer) || {_, Peer, _Node} <- ?config(nodes, Config)].
 
 init_per_testcase(TestCase, Config) ->
-    blockade_sup:start_link(#{name => TestCase}),
+    blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
 
     [erpc:call(Node,
                fun() ->
-                  {ok, SupPid} = blockade_sup:start_link(#{name => TestCase}),
+                  {ok, SupPid} =
+                      blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
                   unlink(SupPid)
                end)
      || {_, _Peer, Node} <- ?config(nodes, Config)],

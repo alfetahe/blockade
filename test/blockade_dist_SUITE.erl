@@ -4,6 +4,8 @@
 
 -include_lib("common_test/include/ct.hrl").
 
+-include("../include/blockade_header.hrl").
+
 -behaviour(ct_suite).
 
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
@@ -38,7 +40,8 @@ end_per_group(_GroupName, Config) ->
 init_per_testcase(TestCase, Config) ->
     [erpc:call(Node,
                fun() ->
-                  {ok, SupPid} = blockade_sup:start_link(#{name => TestCase}),
+                  {ok, SupPid} =
+                      blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
                   unlink(SupPid)
                end)
      || {_, _Peer, Node} <- ?config(nodes, Config)],

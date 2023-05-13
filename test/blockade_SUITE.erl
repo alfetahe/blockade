@@ -2,6 +2,8 @@
 
 -behaviour(ct_suite).
 
+-include("../include/blockade_header.hrl").
+
 -export([all/0, init_per_testcase/2, end_per_testcase/2]).
 -export([test_add_handler/1, test_remove_handler/1, test_get_events/1,
          test_get_handlers/1, test_get_priority/1, test_set_priority/1, test_get_event_queue/1,
@@ -22,7 +24,7 @@ all() ->
      test_dispatch_sync].
 
 init_per_testcase(TestCase, Config) ->
-    blockade_sup:start_link(#{name => TestCase}),
+    blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
     Config.
 
 end_per_testcase(TestCase, _Config) ->
