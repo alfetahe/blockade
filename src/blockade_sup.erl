@@ -18,7 +18,6 @@ start_link(Name, Opts) ->
                           maps:put(name, Name, Opts)).
 
 init(#{name := Name} = Args) ->
-    % TODO: patternmatch all mandatory keys.
     {ok,
      {{one_for_one, 5, 10},
       [#{id => blockade_event_manager, start => {blockade_event_manager, start_link, [Args]}},
