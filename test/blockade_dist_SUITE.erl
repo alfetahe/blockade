@@ -24,11 +24,12 @@ init_per_group(_GroupName, Config) ->
          || _Nr <- lists:seq(1, ?NR_OF_NODES)],
     [unlink(Peer) || {_, Peer, _Node} <- Nodes],
 
-    % Connect all peer nodes to each other.
+    % Connect all peer nodes to each other and start test worker.
     [erpc:call(Node,
                fun() ->
-                  [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes],
-                  nodes()
+                  {ok, TestWorkerPid} = blockade_test_helper:start_link([]),
+                  unlink(TestWorkerPid),
+                  [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes]
                end)
      || {_, _Peer, Node} <- Nodes],
 
@@ -38,6 +39,7 @@ end_per_group(_GroupName, Config) ->
     [peer:stop(Peer) || {_, Peer, _Node} <- ?config(nodes, Config)].
 
 init_per_testcase(TestCase, Config) ->
+    blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
     [erpc:call(Node,
                fun() ->
                   {ok, SupPid} =
@@ -48,6 +50,7 @@ init_per_testcase(TestCase, Config) ->
     Config.
 
 end_per_testcase(TestCase, Config) ->
+    blockade_sup:stop(TestCase),
     [rpc:call(Node, blockade_sup, stop, [TestCase])
      || {_, _Peer, Node} <- ?config(nodes, Config)].
 
