@@ -9,7 +9,7 @@
 -behaviour(ct_suite).
 
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
-         end_per_testcase/2, test_get_handlers_dist/1]).
+         end_per_testcase/2, test_get_handlers_dist/1, test_get_events_dist/1]).
 -export([test_add_handler_dist/1, test_remove_handler_dist/1]).
 
 all() ->
@@ -18,7 +18,10 @@ all() ->
 groups() ->
     [{blockade_dist_group,
       [],
-      [test_add_handler_dist, test_remove_handler_dist, test_get_handlers_dist]}].
+      [test_add_handler_dist,
+       test_remove_handler_dist,
+       test_get_handlers_dist,
+       test_get_events_dist]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -68,7 +71,7 @@ test_remove_handler_dist(Config) ->
     blockade_test_helper:add_handler_nodes(test_remove_handler_dist, test_event, Nodes),
     Pids = [self()] ++ blockade_test_helper:get_pids(?config(nodes, Config)),
     HandlerPids = pg:get_members(test_remove_handler_dist, test_event),
-    lists:all(fun(Pid) -> lists:member(Pid, Pids) end, HandlerPids),
+    true = lists:all(fun(Pid) -> lists:member(Pid, Pids) end, HandlerPids),
     blockade_test_helper:remove_handler_nodes(test_remove_handler_dist, test_event, Nodes),
     [] = pg:get_members(test_remove_handler_dist, test_event).
 
@@ -76,8 +79,20 @@ test_get_handlers_dist(Config) ->
     Nodes = [{any, any, node()} | ?config(nodes, Config)],
     GetHandlersFun = fun() -> blockade:get_handlers(test_get_handlers_dist, test_event) end,
     Res = [erpc:call(Node, GetHandlersFun) || {_, _, Node} <- Nodes],
-    lists:all(fun(Resp) -> Resp =:= {ok, []} end, Res),
-    blockade_test_helper:add_handler_nodes(test_get_handlers_dist, test_event, ?config(nodes, Config)),
+    true = lists:all(fun(Resp) -> Resp =:= {ok, []} end, Res),
+    blockade_test_helper:add_handler_nodes(test_get_handlers_dist,
+                                           test_event,
+                                           ?config(nodes, Config)),
     NewRes = [erpc:call(Node, GetHandlersFun) || {_, _, Node} <- Nodes],
-    Members = pg:get_members(test_get_handlers_dist, test_event),
-    lists:all(fun({ok, Handlers}) -> Handlers =:= Members end, NewRes).
+    Members = pg:get_members(test_get_handlers_dist_pg, test_event),
+    true = lists:all(fun({ok, Handlers}) -> Handlers =:= Members end, NewRes).
+
+test_get_events_dist(Config) ->
+    % Nodes = [{any, any, node()} | ?config(nodes, Config)],
+    % AddEventFun = fun() -> blockade:add_handler(test_get_events_dist, atom_to_binary(test_get_events_dist) ++ "_" ++ atom_to_binary(node())) end,
+    % Resp1 = [erpc:call(Node, AddEventFun) || {_, _, Node} <- Nodes],
+    % Events = pg:which_groups(test_get_events_dist),
+
+    % GetEventsFun = fun() -> blockade:get_events(test_get_events_dist) end,
+    % Resp = [erpc:call(Node, GetEventsFun) || {_, _, Node} <- Nodes],
+    ok.
