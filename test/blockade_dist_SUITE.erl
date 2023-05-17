@@ -10,13 +10,13 @@
 
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
          end_per_testcase/2]).
--export([test_add_handler_dist/1]).
+-export([test_add_handler_dist/1, test_remove_handler/1]).
 
 all() ->
     [{group, blockade_dist_group}].
 
 groups() ->
-    [{blockade_dist_group, [], [test_add_handler_dist]}].
+    [{blockade_dist_group, [], [test_add_handler_dist, test_remove_handler]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -56,8 +56,16 @@ end_per_testcase(TestCase, Config) ->
 
 test_add_handler_dist(Config) ->
     Nodes = ?config(nodes, Config),
-    blockade:add_handler(test_add_handler_dist, test_event),
     blockade_test_helper:add_handler_nodes(test_add_handler_dist, test_event, Nodes),
     Pids = [self()] ++ blockade_test_helper:get_pids(?config(nodes, Config)),
     HandlerPids = pg:get_members(test_add_handler_dist, test_event),
     lists:all(fun(Pid) -> lists:member(Pid, Pids) end, HandlerPids).
+
+test_remove_handler(Config) ->
+    Nodes = ?config(nodes, Config),
+    blockade_test_helper:add_handler_nodes(test_remove_handler, test_event, Nodes),
+    Pids = [self()] ++ blockade_test_helper:get_pids(?config(nodes, Config)),
+    HandlerPids = pg:get_members(test_remove_handler, test_event),
+    lists:all(fun(Pid) -> lists:member(Pid, Pids) end, HandlerPids),
+    blockade_test_helper:remove_handler_nodes(test_remove_handler, test_event, Nodes),
+    [] = pg:get_members(test_remove_handler, test_event).

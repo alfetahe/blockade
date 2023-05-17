@@ -4,8 +4,8 @@
 
 -behaviour(gen_server).
 
--export([start_link/1, all_messages/1, add_handler_nodes/3, start_pg_nodes/2,
-         get_pids/1]).
+-export([start_link/1, all_messages/1, add_handler_nodes/3, remove_handler_nodes/3,
+         start_pg_nodes/2, get_pids/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
 %%------------------------------------------------------------------------------
@@ -18,6 +18,11 @@ all_messages(Messages) ->
     after 0 ->
         Messages
     end.
+
+remove_handler_nodes(Man, Event, Nodes) ->
+    Fun = fun() -> gen_server:call(blockade_test_helper, {remove_handler, Man, Event}) end,
+    [erpc:call(Node, Fun) || {_, _, Node} <- Nodes],
+    blockade:remove_handler(Man, Event).
 
 add_handler_nodes(Man, Event, Nodes) ->
     Fun = fun() -> gen_server:call(blockade_test_helper, {add_handler, Man, Event}) end,
@@ -41,6 +46,9 @@ start_link(Args) ->
 init(Args) ->
     {ok, Args}.
 
+handle_call({remove_handler, EventManager, Event}, _From, State) ->
+    blockade:remove_handler(EventManager, Event),
+    {reply, ok, State};
 handle_call({add_handler, EventManager, Event}, _From, State) ->
     blockade:add_handler(EventManager, Event),
     {reply, ok, State};
