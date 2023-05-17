@@ -59,5 +59,5 @@ test_add_handler_dist(Config) ->
     blockade:add_handler(test_add_handler_dist, test_event),
     blockade_test_helper:add_handler_nodes(test_add_handler_dist, test_event, Nodes),
     Pids = [self()] ++ blockade_test_helper:get_pids(?config(nodes, Config)),
-    {ok, HandlerPids} = blockade:get_handlers(test_add_handler_dist, test_event),
+    HandlerPids = pg:get_members(test_add_handler_dist, test_event),
     lists:all(fun(Pid) -> lists:member(Pid, Pids) end, HandlerPids).
