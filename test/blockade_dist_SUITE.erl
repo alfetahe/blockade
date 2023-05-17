@@ -88,11 +88,18 @@ test_get_handlers_dist(Config) ->
     true = lists:all(fun({ok, Handlers}) -> Handlers =:= Members end, NewRes).
 
 test_get_events_dist(Config) ->
-    % Nodes = [{any, any, node()} | ?config(nodes, Config)],
-    % AddEventFun = fun() -> blockade:add_handler(test_get_events_dist, atom_to_binary(test_get_events_dist) ++ "_" ++ atom_to_binary(node())) end,
-    % Resp1 = [erpc:call(Node, AddEventFun) || {_, _, Node} <- Nodes],
-    % Events = pg:which_groups(test_get_events_dist),
-
-    % GetEventsFun = fun() -> blockade:get_events(test_get_events_dist) end,
-    % Resp = [erpc:call(Node, GetEventsFun) || {_, _, Node} <- Nodes],
-    ok.
+    Nodes = [{any, any, node()} | ?config(nodes, Config)],
+    AddEventFun =
+        fun() ->
+           blockade:add_handler(test_get_events_dist,
+                                list_to_atom(atom_to_list(test_get_events_dist)
+                                             ++ "_"
+                                             ++ atom_to_list(node())))
+        end,
+    Resp1 = [erpc:call(Node, AddEventFun) || {_, _, Node} <- Nodes],
+    true = lists:all(fun(Res) -> Res =:= ok end, Resp1),
+    timer:sleep(100), % Pg has not propagated the results yet.
+    GetEventsFun = fun() -> blockade:get_events(test_get_events_dist) end,
+    Resp2 = [erpc:call(Node, GetEventsFun) || {_, _, Node} <- Nodes],
+    Groups = pg:which_groups(test_get_events_dist_pg),
+    true = lists:all(fun({ok, Events}) -> Events =:= Groups end, Resp2).
