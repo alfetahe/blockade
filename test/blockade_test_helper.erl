@@ -4,7 +4,8 @@
 
 -behaviour(gen_server).
 
--export([start_link/1, all_messages/1, add_handler_nodes/3, start_pg_nodes/2]).
+-export([start_link/1, all_messages/1, add_handler_nodes/3, start_pg_nodes/2,
+         get_pids/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
 %%------------------------------------------------------------------------------
@@ -26,6 +27,10 @@ add_handler_nodes(Man, Event, Nodes) ->
 start_pg_nodes(Man, Nodes) ->
     Fun = fun() -> pg:start(?PROCESS_NAME(Man, "pg")) end,
     [erpc:call(Node, Fun) || {_, _, Node} <- Nodes].
+
+get_pids(Nodes) ->
+    GetPidFun = fun() -> erlang:whereis(?MODULE) end,
+    [erpc:call(Node, GetPidFun) || {_, _, Node} <- Nodes].
 
 %%------------------------------------------------------------------------------
 %% GenServer functions.
