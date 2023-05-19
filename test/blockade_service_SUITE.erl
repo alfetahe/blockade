@@ -109,13 +109,13 @@ test_queue_prune(_Config) ->
     State3 = blockade_service:queue_prune(State3).
 
 test_member_pids(Config) ->
-    Self = self(),
+    LocalPid = erlang:whereis(blockade_test_helper),
     Scope = ?PROCESS_NAME(test_member_pids, "pg"),
     [] = blockade_service:member_pids(Scope, test_event, local),
     blockade_test_helper:add_handler_nodes(test_member_pids,
                                            test_event,
                                            ?config(nodes, Config)),
-    [Self] = blockade_service:member_pids(Scope, test_event, local),
+    [LocalPid] = blockade_service:member_pids(Scope, test_event, local),
     GlobalMembers = blockade_service:member_pids(Scope, test_event, global),
     ?NR_OF_NODES + 1 = length(GlobalMembers),
     true = lists:all(fun(Pid) -> is_pid(Pid) end, GlobalMembers).

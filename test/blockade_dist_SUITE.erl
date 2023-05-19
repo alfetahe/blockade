@@ -10,7 +10,7 @@
 
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
          end_per_testcase/2, test_get_handlers_dist/1, test_get_events_dist/1]).
--export([test_add_handler_dist/1, test_remove_handler_dist/1]).
+-export([test_add_handler_dist/1, test_remove_handler_dist/1, test_dispatch_sync_dist/1]).
 
 all() ->
     [{group, blockade_dist_group}].
@@ -21,7 +21,8 @@ groups() ->
       [test_add_handler_dist,
        test_remove_handler_dist,
        test_get_handlers_dist,
-       test_get_events_dist]}].
+       test_get_events_dist,
+       test_dispatch_sync_dist]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -29,14 +30,20 @@ init_per_group(_GroupName, Config) ->
          || _Nr <- lists:seq(1, ?NR_OF_NODES)],
     [unlink(Peer) || {_, Peer, _Node} <- Nodes],
 
+    StartHelperFun =
+        fun() ->
+           {ok, TestWorkerPid} = blockade_test_helper:start_link([]),
+           unlink(TestWorkerPid)
+        end,
+
     % Connect all peer nodes to each other and start test worker.
     [erpc:call(Node,
                fun() ->
-                  {ok, TestWorkerPid} = blockade_test_helper:start_link([]),
-                  unlink(TestWorkerPid),
+                  StartHelperFun(),
                   [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes]
                end)
      || {_, _Peer, Node} <- Nodes],
+    StartHelperFun(),
 
     [{nodes, Nodes} | Config].
 
@@ -103,3 +110,14 @@ test_get_events_dist(Config) ->
     Resp2 = [erpc:call(Node, GetEventsFun) || {_, _, Node} <- Nodes],
     Groups = pg:which_groups(test_get_events_dist_pg),
     true = lists:all(fun({ok, Events}) -> Events =:= Groups end, Resp2).
+
+test_dispatch_sync_dist(Config) ->
+    Nodes = ?config(nodes, Config),
+    blockade_test_helper:add_handler_nodes(test_dispatch_sync_dist, test_event, Nodes),
+    blockade:dispatch_sync(test_dispatch_sync_dist,
+                           test_event,
+                           {test_dispatch_sync_dist_msg, self()}),
+    % Need to do one test sync call to make sure all nodes have handled the event.
+    blockade_test_helper:test_sync_msg(Nodes),
+    AllMessages = blockade_test_helper:get_all_messages([]),
+    true = lists:all(fun(Resp) -> Resp =:= test_dispatch_sync_dist_msg end, AllMessages).
