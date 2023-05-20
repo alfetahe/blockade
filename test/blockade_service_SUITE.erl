@@ -13,7 +13,7 @@
          test_queue_event/1, test_dispatch_queued/1, test_startup_prio_confr/1,
          test_emit_priority/1, test_sync_priority/1]).
 
--define(NR_OF_NODES, 3).
+-define(NR_OF_NODES, 5).
 
 all() ->
     [{group, blockade_service_group}].
@@ -36,17 +36,13 @@ groups() ->
 
 init_per_group(_GroupName, Config) ->
     Nodes =
-        [?CT_PEER(["-pa", code:lib_dir(blockade) ++ "/ebin"])
+        [?CT_PEER(["-pa", code:lib_dir(blockade) ++ "/ebin", "-connect_all", "false"])
          || _Nr <- lists:seq(1, ?NR_OF_NODES)],
     [unlink(Peer) || {_, Peer, _Node} <- Nodes],
 
-    % Connect all peer nodes to each other and start test worker.
+    % Connect all peer nodes to each other.
     [erpc:call(Node,
-               fun() ->
-                  {ok, TestWorkerPid} = blockade_test_helper:start_link([]),
-                  unlink(TestWorkerPid),
-                  [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes]
-               end)
+               fun() -> [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes] end)
      || {_, _Peer, Node} <- Nodes],
 
     [{nodes, Nodes} | Config].
@@ -55,8 +51,16 @@ end_per_group(_GroupName, Config) ->
     [peer:stop(Peer) || {_, Peer, _Node} <- ?config(nodes, Config)].
 
 init_per_testcase(TestCase, Config) ->
-    blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
+    Nodes = ?config(nodes, Config),
+    StartHelperFun =
+        fun() ->
+           {ok, TestWorkerPid} = blockade_test_helper:start_link(TestCase),
+           unlink(TestWorkerPid)
+        end,
+    [erpc:call(Node, fun() -> StartHelperFun() end) || {_, _Peer, Node} <- Nodes],
+    StartHelperFun(),
 
+    blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
     [erpc:call(Node,
                fun() ->
                   {ok, SupPid} =
@@ -67,6 +71,10 @@ init_per_testcase(TestCase, Config) ->
     Config.
 
 end_per_testcase(TestCase, Config) ->
+    Nodes = ?config(nodes, Config),
+    StopHelperFun = fun() -> blockade_test_helper:stop(TestCase) end,
+    [erpc:call(Node, StopHelperFun) || {_, _Peer, Node} <- Nodes],
+    StopHelperFun(),
     blockade_sup:stop(TestCase),
     [rpc:call(Node, blockade_sup, stop, [TestCase])
      || {_, _Peer, Node} <- ?config(nodes, Config)].
@@ -109,7 +117,7 @@ test_queue_prune(_Config) ->
     State3 = blockade_service:queue_prune(State3).
 
 test_member_pids(Config) ->
-    LocalPid = erlang:whereis(blockade_test_helper),
+    LocalPid = erlang:whereis(?PROCESS_NAME(test_member_pids, "helper")),
     Scope = ?PROCESS_NAME(test_member_pids, "pg"),
     [] = blockade_service:member_pids(Scope, test_event, local),
     blockade_test_helper:add_handler_nodes(test_member_pids,

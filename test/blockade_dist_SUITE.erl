@@ -1,6 +1,6 @@
 -module(blockade_dist_SUITE).
 
--define(NR_OF_NODES, 2).
+-define(NR_OF_NODES, 15).
 
 -include_lib("common_test/include/ct.hrl").
 
@@ -26,24 +26,14 @@ groups() ->
 
 init_per_group(_GroupName, Config) ->
     Nodes =
-        [?CT_PEER(["-pa", code:lib_dir(blockade) ++ "/ebin"])
+        [?CT_PEER(["-pa", code:lib_dir(blockade) ++ "/ebin", "-connect_all", "false"])
          || _Nr <- lists:seq(1, ?NR_OF_NODES)],
     [unlink(Peer) || {_, Peer, _Node} <- Nodes],
 
-    StartHelperFun =
-        fun() ->
-           {ok, TestWorkerPid} = blockade_test_helper:start_link([]),
-           unlink(TestWorkerPid)
-        end,
-
-    % Connect all peer nodes to each other and start test worker.
+    % Connect all peer nodes to each other.
     [erpc:call(Node,
-               fun() ->
-                  StartHelperFun(),
-                  [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes]
-               end)
+               fun() -> [net_kernel:connect_node(PeerNode) || {_, _, PeerNode} <- Nodes] end)
      || {_, _Peer, Node} <- Nodes],
-    StartHelperFun(),
 
     [{nodes, Nodes} | Config].
 
@@ -51,6 +41,15 @@ end_per_group(_GroupName, Config) ->
     [peer:stop(Peer) || {_, Peer, _Node} <- ?config(nodes, Config)].
 
 init_per_testcase(TestCase, Config) ->
+    Nodes = ?config(nodes, Config),
+    StartHelperFun =
+        fun() ->
+           {ok, TestWorkerPid} = blockade_test_helper:start_link(TestCase),
+           unlink(TestWorkerPid)
+        end,
+    [erpc:call(Node, fun() -> StartHelperFun() end) || {_, _Peer, Node} <- Nodes],
+    StartHelperFun(),
+
     blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
     [erpc:call(Node,
                fun() ->
@@ -62,6 +61,10 @@ init_per_testcase(TestCase, Config) ->
     Config.
 
 end_per_testcase(TestCase, Config) ->
+    Nodes = ?config(nodes, Config),
+    StopHelperFun = fun() -> blockade_test_helper:stop(TestCase) end,
+    [erpc:call(Node, StopHelperFun) || {_, _Peer, Node} <- Nodes],
+    StopHelperFun(),
     blockade_sup:stop(TestCase),
     [rpc:call(Node, blockade_sup, stop, [TestCase])
      || {_, _Peer, Node} <- ?config(nodes, Config)].
@@ -69,14 +72,16 @@ end_per_testcase(TestCase, Config) ->
 test_add_handler_dist(Config) ->
     Nodes = ?config(nodes, Config),
     blockade_test_helper:add_handler_nodes(test_add_handler_dist, test_event, Nodes),
-    Pids = [self()] ++ blockade_test_helper:get_pids(?config(nodes, Config)),
+    Pids =
+        [self()] ++ blockade_test_helper:get_pids(test_add_handler_dist, ?config(nodes, Config)),
     HandlerPids = pg:get_members(test_add_handler_dist, test_event),
     lists:all(fun(Pid) -> lists:member(Pid, Pids) end, HandlerPids).
 
 test_remove_handler_dist(Config) ->
     Nodes = ?config(nodes, Config),
     blockade_test_helper:add_handler_nodes(test_remove_handler_dist, test_event, Nodes),
-    Pids = [self()] ++ blockade_test_helper:get_pids(?config(nodes, Config)),
+    Pids =
+        [self()] ++ blockade_test_helper:get_pids(test_add_handler_dist, ?config(nodes, Config)),
     HandlerPids = pg:get_members(test_remove_handler_dist, test_event),
     true = lists:all(fun(Pid) -> lists:member(Pid, Pids) end, HandlerPids),
     blockade_test_helper:remove_handler_nodes(test_remove_handler_dist, test_event, Nodes),
@@ -90,9 +95,12 @@ test_get_handlers_dist(Config) ->
     blockade_test_helper:add_handler_nodes(test_get_handlers_dist,
                                            test_event,
                                            ?config(nodes, Config)),
+    blockade_test_helper:test_sync_msg(test_get_handlers_dist, ?config(nodes, Config)),
     NewRes = [erpc:call(Node, GetHandlersFun) || {_, _, Node} <- Nodes],
     Members = pg:get_members(test_get_handlers_dist_pg, test_event),
-    true = lists:all(fun({ok, Handlers}) -> Handlers =:= Members end, NewRes).
+    true =
+        lists:all(fun({ok, Handlers}) -> lists:sort(Handlers) =:= lists:sort(Members) end,
+                  NewRes).
 
 test_get_events_dist(Config) ->
     Nodes = [{any, any, node()} | ?config(nodes, Config)],
@@ -118,6 +126,6 @@ test_dispatch_sync_dist(Config) ->
                            test_event,
                            {test_dispatch_sync_dist_msg, self()}),
     % Need to do one test sync call to make sure all nodes have handled the event.
-    blockade_test_helper:test_sync_msg(Nodes),
+    blockade_test_helper:test_sync_msg(test_dispatch_sync_dist, Nodes),
     AllMessages = blockade_test_helper:get_all_messages([]),
     true = lists:all(fun(Resp) -> Resp =:= test_dispatch_sync_dist_msg end, AllMessages).
