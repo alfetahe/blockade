@@ -1,6 +1,6 @@
 -module(blockade_dist_SUITE).
 
--define(NR_OF_NODES, 15).
+-define(NR_OF_NODES, 2).
 
 -include_lib("common_test/include/ct.hrl").
 
@@ -10,7 +10,9 @@
 
 -export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
          end_per_testcase/2, test_get_handlers_dist/1, test_get_events_dist/1]).
--export([test_add_handler_dist/1, test_remove_handler_dist/1, test_dispatch_sync_dist/1]).
+-export([test_add_handler_dist/1, test_remove_handler_dist/1, test_dispatch_sync_dist/1,
+         test_dispatch_dist/1, test_dispatch_dist_prio/1, test_dispatch_dist_memb_local/1,
+         test_dispatch_dist_memb_global/1]).
 
 all() ->
     [{group, blockade_dist_group}].
@@ -22,7 +24,11 @@ groups() ->
        test_remove_handler_dist,
        test_get_handlers_dist,
        test_get_events_dist,
-       test_dispatch_sync_dist]}].
+       test_dispatch_sync_dist,
+       test_dispatch_dist,
+       test_dispatch_dist_prio,
+       test_dispatch_dist_memb_local,
+       test_dispatch_dist_memb_global]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -129,3 +135,60 @@ test_dispatch_sync_dist(Config) ->
     blockade_test_helper:test_sync_msg(test_dispatch_sync_dist, Nodes),
     AllMessages = blockade_test_helper:get_all_messages([]),
     true = lists:all(fun(Resp) -> Resp =:= test_dispatch_sync_dist_msg end, AllMessages).
+
+test_dispatch_dist(Config) ->
+    Nodes = ?config(nodes, Config),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist, test_event, Nodes),
+    blockade:dispatch(test_dispatch_dist, test_event, {test_dispatch_dist_msg, self()}),
+    % Need to do one test sync call to make sure all nodes have handled the event.
+    blockade_test_helper:test_sync_msg(test_dispatch_dist, Nodes),
+    AllMessages = blockade_test_helper:get_all_messages([]),
+    true = lists:all(fun(Resp) -> Resp =:= test_dispatch_dist_msg end, AllMessages).
+
+test_dispatch_dist_prio(Config) ->
+    Nodes = ?config(nodes, Config),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist_prio, prio_1, Nodes),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist_prio, prio_0, Nodes),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist_prio, prio_minus_1, Nodes),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist_prio, prio_2, Nodes),
+    blockade:set_priority(test_dispatch_dist_prio, 1),
+    blockade:dispatch(test_dispatch_dist_prio, prio_0, {prio_0, self()}),
+    blockade:dispatch(test_dispatch_dist_prio,
+                      prio_minus_1,
+                      {prio_minus_1, self()},
+                      #{priority => -1}),
+    blockade:dispatch(test_dispatch_dist_prio, prio_1, {prio_1, self()}, #{priority => 1}),
+    blockade:dispatch(test_dispatch_dist_prio, prio_2, {prio_2, self()}, #{priority => 2}),
+    % Need to do one test sync call to make sure all nodes have handled the event.
+    blockade_test_helper:test_sync_msg(test_dispatch_dist_prio, Nodes),
+    AllMessages = blockade_test_helper:get_all_messages([]),
+    true = lists:all(fun(Resp) -> Resp =:= prio_1 orelse Resp =:= prio_2 end, AllMessages).
+
+test_dispatch_dist_memb_local(Config) ->
+    Nodes = ?config(nodes, Config),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist_memb_local, memb_local, Nodes),
+    blockade:dispatch(test_dispatch_dist_memb_local,
+                      memb_local,
+                      {memb_local, self()},
+                      #{members => local}),
+    % Need to do one test sync call to make sure all nodes have handled the event.
+    blockade_test_helper:test_sync_msg(test_dispatch_dist_memb_local, Nodes),
+    AllMessages = blockade_test_helper:get_all_messages([]),
+    1 = length(AllMessages),
+    true = lists:all(fun(Resp) -> Resp =:= memb_local end, AllMessages).
+
+test_dispatch_dist_memb_global(Config) ->
+    Nodes = ?config(nodes, Config),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist_memb_global,
+                                           memb_global,
+                                           Nodes),
+    blockade:dispatch(test_dispatch_dist_memb_global,
+                      memb_global,
+                      {memb_global, self()},
+                      #{members => global}),
+    % Need to do one test sync call to make sure all nodes have handled the event.
+    blockade_test_helper:test_sync_msg(test_dispatch_dist_memb_global, Nodes),
+    AllMessages = blockade_test_helper:get_all_messages([]),
+    Total = ?NR_OF_NODES + 1,
+    Total = length(AllMessages),
+    true = lists:all(fun(Resp) -> Resp =:= memb_global end, AllMessages).

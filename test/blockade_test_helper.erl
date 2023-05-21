@@ -78,10 +78,10 @@ handle_call(_Request, _From, State) ->
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
-handle_info({test_event, {Msg, Pid}}, State) when is_pid(Pid) ->
+handle_info({_, {Msg, Pid}}, State) when is_pid(Pid) ->
     Pid ! Msg,
     {noreply, State};
-handle_info({test_event, _EventPayload}, State) ->
+handle_info({_, _EventPayload}, State) ->
     {noreply, State};
 handle_info(_Info, State) ->
     {noreply, State}.
