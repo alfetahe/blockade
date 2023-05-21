@@ -5,8 +5,8 @@
 -behaviour(gen_server).
 
 -export([start_link/1, stop/1, all_messages/1, add_handler_nodes/3,
-         remove_handler_nodes/3, start_pg_nodes/2, get_pids/2, get_all_messages/1,
-         test_sync_msg/2]).
+         remove_handler_nodes/3, start_pg_nodes/2, get_pids/2, get_all_messages/1, test_sync_msg/2,
+         get_priorities/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
 %%------------------------------------------------------------------------------
@@ -53,6 +53,10 @@ get_all_messages(Messages) ->
     after 0 ->
         Messages
     end.
+
+get_priorities(Man, Nodes) ->
+    NodesAll = [{any, any, node()} | Nodes],
+    [erpc:call(Node, fun() -> blockade:get_priority(Man) end) || {_, _, Node} <- NodesAll].
 
 %%------------------------------------------------------------------------------
 %% GenServer functions.

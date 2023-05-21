@@ -23,7 +23,8 @@ init(Opts) ->
     {ok,
      #manst{manager = maps:get(name, Opts),
             discard_events = maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS),
-            priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY), emitted_priorites = [],
+            priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY),
+            emitted_priorites = [],
             priority_confirmed = blockade_service:startup_prio_confr(Opts)}}.
 
 handle_cast({dispatch, Event, Payload, #{priority := P} = Opts}, State)
