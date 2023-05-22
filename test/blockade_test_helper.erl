@@ -6,7 +6,7 @@
 
 -export([start_link/1, stop/1, all_messages/1, add_handler_nodes/3,
          remove_handler_nodes/3, start_pg_nodes/2, get_pids/2, get_all_messages/1, test_sync_msg/2,
-         get_priorities/2]).
+         get_priorities/2, get_event_queues/2, get_local_pid/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
 
 %%------------------------------------------------------------------------------
@@ -54,9 +54,16 @@ get_all_messages(Messages) ->
         Messages
     end.
 
+get_event_queues(Man, Nodes) ->
+    NodesAll = [{any, any, node()} | Nodes],
+    [erpc:call(Node, fun() -> blockade:get_event_queue(Man) end) || {_, _, Node} <- NodesAll].
+
 get_priorities(Man, Nodes) ->
     NodesAll = [{any, any, node()} | Nodes],
     [erpc:call(Node, fun() -> blockade:get_priority(Man) end) || {_, _, Node} <- NodesAll].
+
+get_local_pid(Man) ->
+    erlang:whereis(?PROCESS_NAME(Man, "helper")).
 
 %%------------------------------------------------------------------------------
 %% GenServer functions.
