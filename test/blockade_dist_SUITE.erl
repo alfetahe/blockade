@@ -13,7 +13,7 @@
 -export([test_add_handler_dist/1, test_remove_handler_dist/1, test_dispatch_sync_dist/1,
          test_dispatch_dist/1, test_dispatch_dist_prio/1, test_dispatch_dist_memb_local/1,
          test_dispatch_dist_memb_global/1, test_get_set_priority_dist/1,
-         test_get_event_queue_dist/1]).
+         test_get_event_queue_dist/1, test_prune_event_queue_dist/1]).
 
 all() ->
     [{group, blockade_dist_group}].
@@ -31,7 +31,8 @@ groups() ->
        test_dispatch_dist_memb_local,
        test_dispatch_dist_memb_global,
        test_get_set_priority_dist,
-       test_get_event_queue_dist]}].
+       test_get_event_queue_dist,
+       test_prune_event_queue_dist]}].
 
 init_per_group(_GroupName, Config) ->
     Nodes =
@@ -234,3 +235,15 @@ test_get_event_queue_dist(Config) ->
          [{test_event, {test_event, self()}, #{priority => -1}},
           {test_event, {test_event, self()}, #{priority => 1}},
           {test_event, {test_event, self()}, #{priority => 0}}]}.
+
+test_prune_event_queue_dist(Config) ->
+    E = test_prune_event_queue_dist,
+    Nodes = ?config(nodes, Config),
+    blockade_test_helper:add_handler_nodes(E, test_event, Nodes),
+    blockade:set_priority(E, -5, #{discard_events => false}),
+    blockade:dispatch(E, test_event, {test_event, self()}, #{priority => -15}),
+    blockade:dispatch(E, test_event, {test_event, self()}, #{priority => -10}),
+    blockade_test_helper:test_sync_msg(E, Nodes),
+    blockade:prune_event_queue(E),
+    AllQueues1 = blockade_test_helper:get_event_queues(E, Nodes),
+    true = lists:all(fun(Queue) -> Queue =:= {ok, []} end, AllQueues1).
