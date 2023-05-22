@@ -1,6 +1,6 @@
 -module(blockade_dist_SUITE).
 
--define(NR_OF_NODES, 2).
+-define(NR_OF_NODES, 25).
 
 -include_lib("common_test/include/ct.hrl").
 
@@ -8,7 +8,7 @@
 
 -behaviour(ct_suite).
 
--export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
+-export([all/0, init_per_suite/1, end_per_suite/1, init_per_testcase/2,
          end_per_testcase/2, test_get_handlers_dist/1, test_get_events_dist/1]).
 -export([test_add_handler_dist/1, test_remove_handler_dist/1, test_dispatch_sync_dist/1,
          test_dispatch_dist/1, test_dispatch_dist_prio/1, test_dispatch_dist_memb_local/1,
@@ -16,25 +16,20 @@
          test_get_event_queue_dist/1, test_prune_event_queue_dist/1]).
 
 all() ->
-    [{group, blockade_dist_group}].
+    [test_add_handler_dist,
+     test_remove_handler_dist,
+     test_get_handlers_dist,
+     test_get_events_dist,
+     test_dispatch_sync_dist,
+     test_dispatch_dist,
+     test_dispatch_dist_prio,
+     test_dispatch_dist_memb_local,
+     test_dispatch_dist_memb_global,
+     test_get_set_priority_dist,
+     test_get_event_queue_dist,
+     test_prune_event_queue_dist].
 
-groups() ->
-    [{blockade_dist_group,
-      [],
-      [test_add_handler_dist,
-       test_remove_handler_dist,
-       test_get_handlers_dist,
-       test_get_events_dist,
-       test_dispatch_sync_dist,
-       test_dispatch_dist,
-       test_dispatch_dist_prio,
-       test_dispatch_dist_memb_local,
-       test_dispatch_dist_memb_global,
-       test_get_set_priority_dist,
-       test_get_event_queue_dist,
-       test_prune_event_queue_dist]}].
-
-init_per_group(_GroupName, Config) ->
+init_per_suite(Config) ->
     Nodes =
         [?CT_PEER(["-pa", code:lib_dir(blockade) ++ "/ebin", "-connect_all", "false"])
          || _Nr <- lists:seq(1, ?NR_OF_NODES)],
@@ -47,7 +42,7 @@ init_per_group(_GroupName, Config) ->
 
     [{nodes, Nodes} | Config].
 
-end_per_group(_GroupName, Config) ->
+end_per_suite(Config) ->
     [peer:stop(Peer) || {_, Peer, _Node} <- ?config(nodes, Config)].
 
 init_per_testcase(TestCase, Config) ->

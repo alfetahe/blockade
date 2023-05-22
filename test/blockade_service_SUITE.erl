@@ -6,7 +6,7 @@
 
 -behaviour(ct_suite).
 
--export([all/0, groups/0, init_per_group/2, end_per_group/2, init_per_testcase/2,
+-export([all/0, init_per_suite/1, end_per_suite/1, init_per_testcase/2,
          end_per_testcase/2]).
 -export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1,
          test_member_pids/1, test_rand_node/1, test_send_messages/1, test_dispatch_event/1,
@@ -16,25 +16,20 @@
 -define(NR_OF_NODES, 5).
 
 all() ->
-    [{group, blockade_service_group}].
+    [test_get_reset_opt,
+     test_get_discard_opt,
+     test_queue_prune,
+     test_member_pids,
+     test_rand_node,
+     test_send_messages,
+     test_dispatch_event,
+     test_queue_event,
+     test_dispatch_queued,
+     test_startup_prio_confr,
+     test_emit_priority,
+     test_sync_priority].
 
-groups() ->
-    [{blockade_service_group,
-      [],
-      [test_get_reset_opt,
-       test_get_discard_opt,
-       test_queue_prune,
-       test_member_pids,
-       test_rand_node,
-       test_send_messages,
-       test_dispatch_event,
-       test_queue_event,
-       test_dispatch_queued,
-       test_startup_prio_confr,
-       test_emit_priority,
-       test_sync_priority]}].
-
-init_per_group(_GroupName, Config) ->
+init_per_suite(Config) ->
     Nodes =
         [?CT_PEER(["-pa", code:lib_dir(blockade) ++ "/ebin", "-connect_all", "false"])
          || _Nr <- lists:seq(1, ?NR_OF_NODES)],
@@ -47,7 +42,7 @@ init_per_group(_GroupName, Config) ->
 
     [{nodes, Nodes} | Config].
 
-end_per_group(_GroupName, Config) ->
+end_per_suite(Config) ->
     [peer:stop(Peer) || {_, Peer, _Node} <- ?config(nodes, Config)].
 
 init_per_testcase(TestCase, Config) ->
