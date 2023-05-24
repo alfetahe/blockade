@@ -7,7 +7,7 @@
 %%------------------------------------------------------------------------------
 -export([add_handler/2, dispatch/3, dispatch/4, dispatch_sync/3, dispatch_sync/4,
          set_priority/2, set_priority/3, get_priority/1, get_handlers/2, get_events/1,
-         remove_handler/2, get_event_queue/1, prune_event_queue/1]).
+         remove_handler/2, get_event_queue/1, prune_event_queue/1, discard_events/2]).
 
 -export_type([event_manager/0, queued_event/0, priority/0]).
 
@@ -19,7 +19,8 @@
 -type queued_event() :: {event(), event_payload(), dispatch_opts()}.
 -type event_payload() :: term().
 -type priority() :: integer().
--type priority_opts() :: #{reset_after => integer(), discard_events => boolean()}.
+-type discard_events() :: boolean().
+-type priority_opts() :: #{reset_after => integer(), discard_events => discard_events()}.
 -type dispatch_opts() :: #{priority => priority(), members => local | global}.
 
 %%------------------------------------------------------------------------------
@@ -84,6 +85,11 @@ get_event_queue(EventManager) ->
 -spec prune_event_queue(event_manager()) -> ok.
 prune_event_queue(EventManager) ->
     gen_server:abcast(get_nodes(), EventManager, prune_event_queue),
+    ok.
+
+-spec discard_events(event_manager(), discard_events()) -> ok.
+discard_events(EventManager, Flag) ->
+    gen_server:abcast(get_nodes(), EventManager, {discard_events, Flag}),
     ok.
 
 %%--------------------------------------------------------------------------------------------------

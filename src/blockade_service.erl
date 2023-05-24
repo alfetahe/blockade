@@ -3,7 +3,7 @@
 -include("include/blockade_header.hrl").
 
 -export([rand_node/0, member_pids/3, send_messages/3, dispatch_event/4, queue_event/4,
-         dispatch_queued/4, queue_prune/1, get_discard_opt/2, get_reset_opt/2, emit_priority/2,
+         dispatch_queued/4, queue_prune/2, get_discard_opt/2, get_reset_opt/2, emit_priority/2,
          sync_priority/2, startup_prio_confr/1]).
 
 %%------------------------------------------------------------------------------
@@ -63,11 +63,8 @@ member_pids(Scope, Event, MemberType) when MemberType == global ->
 member_pids(_Scope, _Event, _MemberType) ->
     throw({error, invalid_members_option}).
 
-queue_prune(#manst{priority = P, discard_events = true, event_queue = Eq} = State) ->
-    Neq = [Ed || {_, _, #{priority := Ep}} = Ed <- Eq, Ep >= P],
-    State#manst{event_queue = Neq};
-queue_prune(State) ->
-    State.
+queue_prune(EventQueue, Priority) ->
+    [Event || {_, _, #{priority := EventPrio}} = Event <- EventQueue, EventPrio >= Priority].
 
 get_discard_opt(State, Opts) ->
     case maps:get(discard_events, Opts, undefined) of

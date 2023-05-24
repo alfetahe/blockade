@@ -27,6 +27,11 @@ init(Opts) ->
             emitted_priorites = [],
             priority_confirmed = blockade_service:startup_prio_confr(Opts)}}.
 
+handle_cast({discard_events, true}, #manst{priority = P, event_queue = Eq} = State) ->
+    NewEq = blockade_service:queue_prune(Eq, P),
+    {noreply, State#manst{discard_events = true, event_queue = NewEq}};
+handle_cast({discard_events, false}, State) ->
+    {noreply, State#manst{discard_events = false}};
 handle_cast({dispatch, Event, Payload, #{priority := P} = Opts}, State)
     when P >= State#manst.priority ->
     blockade_service:dispatch_event(Event, Payload, State#manst.manager, Opts),
@@ -79,9 +84,14 @@ handle_info(emit_priority, #manst{priority = Priority, manager = Man} = State) -
     blockade_service:emit_priority(Man, Priority),
     erlang:send_after(?PRIORITY_EMIT_SCHEDULE, self(), emit_priority),
     {noreply, State};
-handle_info(queue_prune, State) ->
+handle_info(queue_prune,
+            #manst{priority = P, event_queue = Eq, discard_events = true} = State) ->
     erlang:send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
-    {noreply, blockade_service:queue_prune(State)};
+    NewEq = blockade_service:queue_prune(Eq, P),
+    {noreply, State#manst{event_queue = NewEq}};
+handle_info(queue_prune, #manst{discard_events = false} = State) ->
+    erlang:send_after(?EVENT_QUEUE_PRUNE, self(), queue_prune),
+    {noreply, State};
 handle_info(reset_priority, #manst{event_queue = Eq, manager = Man} = State) ->
     Neq = blockade_service:dispatch_queued(
               lists:reverse(Eq), Man, ?DEFAULT_PRIORITY, []),
