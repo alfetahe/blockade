@@ -203,7 +203,7 @@ test_emit_priority(_Config) ->
     blockade_service:emit_priority(test_emit_priority, 3000),
     RespFun = fun() -> gen_server:call(test_emit_priority, get_state) end,
     Responses = [erpc:call(Node, RespFun) || Node <- nodes()],
-    true = lists:all(fun(#{emitted_priorites := Ep}) -> Ep =:= [3000, 5000] end, Responses).
+    true = lists:all(fun(#{emitted_priorities := Ep}) -> Ep =:= [3000, 5000] end, Responses).
 
 test_sync_priority(_Config) ->
     999 = blockade_service:sync_priority([], 999),

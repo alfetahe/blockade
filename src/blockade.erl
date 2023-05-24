@@ -7,7 +7,8 @@
 %%------------------------------------------------------------------------------
 -export([add_handler/2, dispatch/3, dispatch/4, dispatch_sync/3, dispatch_sync/4,
          set_priority/2, set_priority/3, get_priority/1, get_handlers/2, get_events/1,
-         remove_handler/2, get_event_queue/1, prune_event_queue/1, discard_events/2]).
+         remove_handler/2, get_event_queue/1, prune_event_queue/1, discard_events/2,
+         local_manager_state/1]).
 
 -export_type([event_manager/0, queued_event/0, priority/0]).
 
@@ -93,6 +94,10 @@ discard_events(EventManager, Flag) when is_boolean(Flag) ->
     ok;
 discard_events(_EventManager, _Flag) ->
     {error, flag_not_boolean}.
+
+-spec local_manager_state(event_manager()) -> {ok, map()}.
+local_manager_state(EventManager) ->
+    gen_server:call(EventManager, get_state).
 
 %%--------------------------------------------------------------------------------------------------
 %% Private functions

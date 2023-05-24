@@ -7,8 +7,8 @@
 -export([all/0, init_per_testcase/2, end_per_testcase/2]).
 -export([test_add_handler/1, test_remove_handler/1, test_get_events/1,
          test_get_handlers/1, test_get_priority/1, test_set_priority/1, test_get_event_queue/1,
-         test_prune_event_queue/1, test_dispatch/1, test_dispatch_priority/1,
-         test_dispatch_sync/1]).
+         test_prune_event_queue/1, test_dispatch/1, test_dispatch_priority/1, test_dispatch_sync/1,
+         test_discard_events/1, test_local_manager_state/1]).
 
 all() ->
     [test_add_handler,
@@ -21,7 +21,9 @@ all() ->
      test_prune_event_queue,
      test_dispatch,
      test_dispatch_priority,
-     test_dispatch_sync].
+     test_dispatch_sync,
+     test_discard_events,
+     test_local_manager_state].
 
 init_per_testcase(TestCase, Config) ->
     blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
@@ -113,6 +115,25 @@ test_dispatch_sync(_Config) ->
         after 1000 ->
             error
         end.
+
+test_discard_events(_Config) ->
+    blockade:dispatch(test_discard_events, test_event, test_data, #{priority => -5}),
+    blockade:discard_events(test_discard_events, true),
+    ManState =
+        blockade:local_manager_state(test_discard_events), % Do sync call and get state.
+    true = maps:get(discard_events, ManState, false),
+    {ok, []} = blockade:get_event_queue(test_discard_events).
+
+test_local_manager_state(_Config) ->
+    LocalManState = blockade:local_manager_state(test_local_manager_state),
+    LocalManState =
+        #{manager => test_local_manager_state,
+          discard_events => ?DEFAULT_DISCARD_EVENTS,
+          priority => ?DEFAULT_PRIORITY,
+          event_queue => [],
+          schduler_ref => undefined,
+          emitted_priorities => [],
+          priority_confirmed => true}.
 
 get_messages() ->
     {messages, Messages} = process_info(self(), messages),

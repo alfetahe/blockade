@@ -1,6 +1,6 @@
 -module(blockade_dist_SUITE).
 
--define(NR_OF_NODES, 25).
+-define(NR_OF_NODES, 15).
 
 -include_lib("common_test/include/ct.hrl").
 

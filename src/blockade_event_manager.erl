@@ -16,7 +16,7 @@
          priority = ?DEFAULT_PRIORITY :: integer(),
          discard_events = ?DEFAULT_DISCARD_EVENTS,
          schduler_ref = undefined :: reference() | undefined,
-         emitted_priorites = [] :: [blockade:priority()],
+         emitted_priorities = [] :: [blockade:priority()],
          priority_confirmed = false :: true | false}).
 
 %%------------------------------------------------------------------------------
@@ -36,7 +36,7 @@ init(Opts) ->
      #state{manager = maps:get(name, Opts),
             discard_events = maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS),
             priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY),
-            emitted_priorites = [],
+            emitted_priorities = [],
             priority_confirmed = blockade_service:startup_prio_confr(Opts)}}.
 
 handle_cast({discard_events, true}, #state{priority = P, event_queue = Eq} = State) ->
@@ -54,8 +54,8 @@ handle_cast({dispatch, Event, Payload, Opts},
     {noreply, State#state{event_queue = Neq}};
 handle_cast(prune_event_queue, State) ->
     {noreply, State#state{event_queue = []}};
-handle_cast({priority_emit, EmittedPrio}, #state{emitted_priorites = Ep} = State) ->
-    {noreply, State#state{emitted_priorites = [EmittedPrio | Ep]}};
+handle_cast({priority_emit, EmittedPrio}, #state{emitted_priorities = Ep} = State) ->
+    {noreply, State#state{emitted_priorities = [EmittedPrio | Ep]}};
 handle_cast({set_priority, Priority, Opts},
             #state{event_queue = Eq, manager = Man, schduler_ref = Sf} = State) ->
     {noreply,
@@ -88,17 +88,18 @@ handle_call(get_state, _From, State) ->
           event_queue => lists:reverse(State#state.event_queue),
           discard_events => State#state.discard_events,
           schduler_ref => State#state.schduler_ref,
-          emitted_priorites => State#state.emitted_priorites,
+          emitted_priorities => State#state.emitted_priorities,
           priority_confirmed => State#state.priority_confirmed},
     {reply, StateMap, State};
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_msg}, State}.
 
-handle_info(sync_priority, #state{emitted_priorites = Ep, priority = Priority} = State) ->
+handle_info(sync_priority,
+            #state{emitted_priorities = Ep, priority = Priority} = State) ->
     SyncPrio = blockade_service:sync_priority(Ep, Priority),
     erlang:send_after(?PRIORITY_SYNC_SCHEDULE, self(), sync_priority),
     {noreply,
-     State#state{emitted_priorites = [], priority = SyncPrio, priority_confirmed = true}};
+     State#state{emitted_priorities = [], priority = SyncPrio, priority_confirmed = true}};
 handle_info(emit_priority, #state{priority_confirmed = Confirm} = State)
     when Confirm =:= false ->
     erlang:send_after(?PRIORITY_EMIT_SCHEDULE, self(), emit_priority),
