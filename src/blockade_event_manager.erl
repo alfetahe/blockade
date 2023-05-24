@@ -44,10 +44,9 @@ handle_cast(prune_event_queue, State) ->
 handle_cast({priority_emit, EmittedPrio}, #manst{emitted_priorites = Ep} = State) ->
     {noreply, State#manst{emitted_priorites = [EmittedPrio | Ep]}};
 handle_cast({set_priority, Priority, Opts},
-            #manst{event_queue = Eq, manager = Man} = State) ->
+            #manst{event_queue = Eq, manager = Man, schduler_ref = Sf} = State) ->
     {noreply,
-     State#manst{priority = Priority,
-                 schduler_ref = blockade_service:get_reset_opt(State, Opts),
+     State#manst{priority = Priority, schduler_ref = blockade_service:get_reset_opt(Opts, Sf),
                  event_queue =
                      blockade_service:dispatch_queued(
                          lists:reverse(Eq), Man, Priority, []),

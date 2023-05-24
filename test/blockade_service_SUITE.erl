@@ -75,12 +75,10 @@ end_per_testcase(TestCase, Config) ->
      || {_, _Peer, Node} <- ?config(nodes, Config)].
 
 test_get_reset_opt(_Config) ->
-    undefined = blockade_service:get_reset_opt(#manst{}, #{}),
-    true = is_reference(blockade_service:get_reset_opt(#manst{}, #{reset_after => 1})),
-    true =
-        is_reference(blockade_service:get_reset_opt(#manst{schduler_ref = test},
-                                                    #{reset_after => 2})),
-    test = blockade_service:get_reset_opt(#manst{schduler_ref = test}, #{}).
+    undefined = blockade_service:get_reset_opt(#{}, undefined),
+    true = is_reference(blockade_service:get_reset_opt(#{reset_after => 1}, any)),
+    true = is_reference(blockade_service:get_reset_opt(#{reset_after => 2}, undefined)),
+    test = blockade_service:get_reset_opt(#{}, test).
 
 test_get_discard_opt(_Config) ->
     ?DEFAULT_DISCARD_EVENTS = blockade_service:get_discard_opt(#{}, false),

@@ -74,10 +74,10 @@ get_discard_opt(Opts, DefaultDiscard) ->
             DiscardEvents
     end.
 
-get_reset_opt(State, Opts) ->
+get_reset_opt(Opts, DefaultRef) ->
     case maps:get(reset_after, Opts, undefined) of
         undefined ->
-            State#manst.schduler_ref;
+            DefaultRef;
         _ ->
             schedule_reset(Opts)
     end.
