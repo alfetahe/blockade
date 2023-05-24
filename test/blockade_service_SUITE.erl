@@ -152,25 +152,32 @@ test_queue_event(_Config) ->
     E = test_event,
     P = test_payload,
     Eq = [{E, P, #{priority => 1, members => global}}],
-    S1 = #manst{event_queue = Eq, discard_events = true, priority = 0},
-    {event_discarded, S1} = blockade_service:queue_event(E, P, #{priority => -1}, S1),
-    {event_queued, #manst{event_queue = [{E, P, #{priority := 0}} | Eq]}} =
-        blockade_service:queue_event(E, P, #{priority => 0}, S1),
-    {event_queued, #manst{event_queue = [{E, P, #{priority := 1}} | Eq]}} =
-        blockade_service:queue_event(E, P, #{priority => 1}, S1),
-    S2 = S1#manst{priority = -100},
-    {event_discarded, S2} = blockade_service:queue_event(E, P, #{priority => -101}, S2),
-    {event_queued, #manst{event_queue = [{E, P, #{priority := 100}} | Eq]}} =
-        blockade_service:queue_event(E, P, #{priority => 100}, S2),
-    {event_queued, #manst{event_queue = [{E, P, #{priority := -100}} | Eq]}} =
-        blockade_service:queue_event(E, P, #{priority => -100}, S2),
-    S3 = S2#manst{priority = 999, discard_events = false},
-    {event_queued, #manst{event_queue = [{E, P, #{priority := -15}} | Eq]}} =
-        blockade_service:queue_event(E, P, #{priority => -15}, S3),
-    {event_queued, #manst{event_queue = [{E, P, #{priority := 15}} | Eq]}} =
-        blockade_service:queue_event(E, P, #{priority => 15}, S3),
-    {event_queued, #manst{event_queue = [{E, P, #{priority := 1000}} | Eq]}} =
-        blockade_service:queue_event(E, P, #{priority => 1000}, S3).
+    {event_discarded, Eq} =
+        blockade_service:queue_event(Eq, {E, P, #{priority => -1}}, 0, true),
+    E2 = {E, P, #{priority => 0}},
+    {event_queued, [E2 | Eq]} = blockade_service:queue_event(Eq, E2, 0, true),
+    E3 = {E, P, #{priority => 1}},
+    {event_queued, [E3 | Eq]} = blockade_service:queue_event(Eq, E3, 0, false),
+    {event_discarded, Eq} =
+        blockade_service:queue_event(Eq, {E, P, #{priority => -101}}, -100, true),
+    E4 = {E, P, #{priority => 100}},
+    {event_queued, [E4, E3, E2 | Eq]} =
+        blockade_service:queue_event([E3, E2 | Eq], E4, 0, true),
+    E5 = {E, P, #{priority => 100}},
+    {event_queued, [E5, E3, E2 | Eq]} =
+        blockade_service:queue_event([E3, E2 | Eq], E5, 0, false),
+    E6 = {E, P, #{priority => 1000}},
+    {event_queued, [E6, E3, E2 | Eq]} =
+        blockade_service:queue_event([E3, E2 | Eq], E6, 1000, false),
+    E7 = {E, P, #{priority => -15}},
+    {event_queued, [E7, E3, E2 | Eq]} =
+        blockade_service:queue_event([E3, E2 | Eq], E7, -15, true),
+    {event_queued, [E7, E3, E2 | Eq]} =
+        blockade_service:queue_event([E3, E2 | Eq], E7, -16, false),
+    {event_queued, [E7, E3, E2 | Eq]} =
+        blockade_service:queue_event([E3, E2 | Eq], E7, -14, false),
+    {event_discarded, [E3, E2 | Eq]} =
+        blockade_service:queue_event([E3, E2 | Eq], E7, -14, true).
 
 test_dispatch_queued(Config) ->
     Nodes = [node() | ?config(nodes, Config)],
@@ -196,8 +203,7 @@ test_emit_priority(_Config) ->
     blockade_service:emit_priority(test_emit_priority, 3000),
     RespFun = fun() -> gen_server:call(test_emit_priority, get_state) end,
     Responses = [erpc:call(Node, RespFun) || Node <- nodes()],
-    true =
-        lists:all(fun(#manst{emitted_priorites = Ep}) -> Ep =:= [3000, 5000] end, Responses).
+    true = lists:all(fun(#{emitted_priorites := Ep}) -> Ep =:= [3000, 5000] end, Responses).
 
 test_sync_priority(_Config) ->
     999 = blockade_service:sync_priority([], 999),
