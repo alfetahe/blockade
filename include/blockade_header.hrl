@@ -9,15 +9,3 @@
 -define(PRIORITY_EMIT_SCHEDULE, 15000).
 -define(PROCESS_NAME(Name, Suffix),
         erlang:list_to_atom(erlang:atom_to_list(Name) ++ "_" ++ Suffix)).
-
-%%------------------------------------------------------------------------------
-%% Record definitions
-%%------------------------------------------------------------------------------
--record(manst,
-        {manager :: blockade:event_manager(),
-         event_queue = [] :: [blockade:queued_event()],
-         priority = ?DEFAULT_PRIORITY :: integer(),
-         discard_events = ?DEFAULT_DISCARD_EVENTS,
-         schduler_ref = undefined :: reference() | undefined,
-         emitted_priorites = [] :: [blockade:priority()],
-         priority_confirmed = false :: true | false}).

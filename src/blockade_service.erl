@@ -32,12 +32,11 @@ dispatch_queued([{Event, Payload, #{priority := Ep} = Opts} | Events], Man, Prio
 dispatch_queued([Event | Events], Man, Prio, Eq) ->
     dispatch_queued(Events, Man, Prio, [Event | Eq]).
 
-queue_event(_, _, #{priority := Ep}, #manst{discard_events = true, priority = P} = State)
-    when Ep < P ->
-    {event_discarded, State};
-queue_event(Event, Payload, Opts, State) ->
-    Neq = [{Event, Payload, Opts} | State#manst.event_queue],
-    {event_queued, State#manst{event_queue = Neq}}.
+queue_event(EventQueue, {_, _, #{priority := Ep}}, ManPrio, true) when Ep < ManPrio ->
+    {event_discarded, EventQueue};
+queue_event(EventQueue, {Event, Payload, Opts}, _ManPrio, _DiscardEvents) ->
+    Neq = [{Event, Payload, Opts} | EventQueue],
+    {event_queued, Neq}.
 
 dispatch_event(Event, Payload, Man, Opts) ->
     Mt = maps:get(members, Opts, global),
