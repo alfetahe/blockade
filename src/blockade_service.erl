@@ -66,12 +66,12 @@ member_pids(_Scope, _Event, _MemberType) ->
 queue_prune(EventQueue, Priority) ->
     [Event || {_, _, #{priority := EventPrio}} = Event <- EventQueue, EventPrio >= Priority].
 
-get_discard_opt(State, Opts) ->
+get_discard_opt(Opts, DefaultDiscard) ->
     case maps:get(discard_events, Opts, undefined) of
         undefined ->
-            State#manst.discard_events;
-        _ ->
-            maps:get(discard_events, Opts, ?DEFAULT_DISCARD_EVENTS)
+            DefaultDiscard;
+        DiscardEvents ->
+            DiscardEvents
     end.
 
 get_reset_opt(State, Opts) ->

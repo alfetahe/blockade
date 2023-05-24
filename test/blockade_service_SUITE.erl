@@ -83,13 +83,11 @@ test_get_reset_opt(_Config) ->
     test = blockade_service:get_reset_opt(#manst{schduler_ref = test}, #{}).
 
 test_get_discard_opt(_Config) ->
-    ?DEFAULT_DISCARD_EVENTS = blockade_service:get_discard_opt(#manst{}, #{}),
-    true = blockade_service:get_discard_opt(#manst{}, #{discard_events => true}),
-    false = blockade_service:get_discard_opt(#manst{}, #{discard_events => false}),
-    true =
-        blockade_service:get_discard_opt(#manst{discard_events = false},
-                                         #{discard_events => true}),
-    true = blockade_service:get_discard_opt(#manst{discard_events = true}, #{}).
+    ?DEFAULT_DISCARD_EVENTS = blockade_service:get_discard_opt(#{}, false),
+    true = blockade_service:get_discard_opt(#{discard_events => true}, false),
+    false = blockade_service:get_discard_opt(#{discard_events => false}, true),
+    true = blockade_service:get_discard_opt(#{discard_events => true}, true),
+    true = blockade_service:get_discard_opt(#{}, true).
 
 test_queue_prune(_Config) ->
     Events =

@@ -51,7 +51,8 @@ handle_cast({set_priority, Priority, Opts},
                  event_queue =
                      blockade_service:dispatch_queued(
                          lists:reverse(Eq), Man, Priority, []),
-                 discard_events = blockade_service:get_discard_opt(State, Opts)}};
+                 discard_events =
+                     blockade_service:get_discard_opt(Opts, State#manst.discard_events)}};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 

@@ -87,10 +87,12 @@ prune_event_queue(EventManager) ->
     gen_server:abcast(get_nodes(), EventManager, prune_event_queue),
     ok.
 
--spec discard_events(event_manager(), discard_events()) -> ok.
-discard_events(EventManager, Flag) ->
+-spec discard_events(event_manager(), discard_events()) -> ok | {error, flag_not_boolean}.
+discard_events(EventManager, Flag) when is_boolean(Flag) ->
     gen_server:abcast(get_nodes(), EventManager, {discard_events, Flag}),
-    ok.
+    ok;
+discard_events(_EventManager, _Flag) ->
+    {error, flag_not_boolean}.
 
 %%--------------------------------------------------------------------------------------------------
 %% Private functions
