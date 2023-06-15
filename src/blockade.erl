@@ -36,7 +36,7 @@ start_link(_) ->
 
 child_spec(#{name := Name} = Opts) ->
     #{id => ?PROCESS_NAME(Name, "sup"),
-      start => {blockade_sup, start_link, [Opts]},
+      start => {blockade_sup, start_link, [Name, Opts]},
       type => worker,
       restart => permanent,
       shutdown => 5000}.
