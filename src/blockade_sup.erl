@@ -21,9 +21,7 @@ init(#{name := Name} = Args) ->
     {ok,
      {{one_for_one, 5, 10},
       [#{id => blockade_event_manager, start => {blockade_event_manager, start_link, [Args]}},
-       #{id => blockade_pg, start => {pg, start_link, [?PROCESS_NAME(Name, "pg")]}}]}};
-init(_) ->
-    throw(mandatory_keys_missing).
+       #{id => blockade_pg, start => {pg, start_link, [?PROCESS_NAME(Name, "pg")]}}]}}.
 
 stop(Name) ->
     Pid = erlang:whereis(?PROCESS_NAME(Name, ?SUFFIX)),

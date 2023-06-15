@@ -23,25 +23,30 @@
 -type discard_events() :: boolean().
 -type priority_opts() :: #{reset_after => integer(), discard_events => discard_events()}.
 -type dispatch_opts() :: #{priority => priority(), members => local | global}.
--type start_up_opts() :: #{priority => priority(), discard_events => discard_events()}.
+-type start_up_opts() :: #{name => event_manager(),priority => priority(), discard_events => discard_events()}.
 
 %%------------------------------------------------------------------------------
 %% Public API
 %%------------------------------------------------------------------------------
--spec start_link(event_manager()) -> {ok, pid()} | ignore | {error, term()}.
-start_link(Name) ->
-    blockade_sup:start_link(Name).
-
--spec start_link(event_manager(), start_up_opts()) -> {ok, pid()} | ignore | {error, term()}.
-start_link(Name, Opts) ->
-    blockade_sup:start_link(Name, Opts).
+-spec start_link(start_up_opts()) -> {ok, pid()} | ignore | {error, term()}.
+start_link(#{name := Name} = Opts) ->
+    blockade_sup:start_link(Name, Opts);
+start_link(_) ->
+    throw(mandatory_option_name_missing).
 
 child_spec(#{name := Name} = opts) ->
     #{id => ?PROCESS_NAME(Name, "sup"),
       start => {blockade_sup, start_link, [opts]},
       type => worker,
       restart => permanent,
-      shutdown => 500}.
+      shutdown => 5000};
+
+child_spec(Name) ->
+    #{id => ?PROCESS_NAME(Name, "sup"),
+      start => {blockade_sup, start_link, [opts]},
+      type => worker,
+      restart => permanent,
+      shutdown => 5000}.    
 
 -spec add_handler(event_manager(), event()) -> ok.
 add_handler(EventManager, Event) ->
