@@ -39,14 +39,7 @@ child_spec(#{name := Name} = Opts) ->
       start => {blockade_sup, start_link, [Opts]},
       type => worker,
       restart => permanent,
-      shutdown => 5000};
-
-child_spec(Name) ->
-    #{id => ?PROCESS_NAME(Name, "sup"),
-      start => {blockade_sup, start_link, [opts]},
-      type => worker,
-      restart => permanent,
-      shutdown => 5000}.    
+      shutdown => 5000}.
 
 -spec add_handler(event_manager(), event()) -> ok.
 add_handler(EventManager, Event) ->
