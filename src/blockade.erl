@@ -5,7 +5,7 @@
 %%------------------------------------------------------------------------------
 %% Public API exports
 %%------------------------------------------------------------------------------
--export([child_spec/1, start_link/1, start_link/2, add_handler/2, dispatch/3, dispatch/4, dispatch_sync/3, dispatch_sync/4,
+-export([child_spec/1, start_link/1, add_handler/2, dispatch/3, dispatch/4, dispatch_sync/3, dispatch_sync/4,
          set_priority/2, set_priority/3, get_priority/1, get_handlers/2, get_events/1,
          remove_handler/2, get_event_queue/1, prune_event_queue/1, discard_events/2,
          local_manager_state/1]).
