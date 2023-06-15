@@ -34,9 +34,9 @@ start_link(#{name := Name} = Opts) ->
 start_link(_) ->
     throw(mandatory_option_name_missing).
 
-child_spec(#{name := Name} = opts) ->
+child_spec(#{name := Name} = Opts) ->
     #{id => ?PROCESS_NAME(Name, "sup"),
-      start => {blockade_sup, start_link, [opts]},
+      start => {blockade_sup, start_link, [Opts]},
       type => worker,
       restart => permanent,
       shutdown => 5000};
