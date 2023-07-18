@@ -5,10 +5,10 @@
 %%------------------------------------------------------------------------------
 %% Public API exports
 %%------------------------------------------------------------------------------
--export([child_spec/1, start_link/1, add_handler/2, dispatch/3, dispatch/4, dispatch_sync/3, dispatch_sync/4,
-         set_priority/2, set_priority/3, get_priority/1, get_handlers/2, get_events/1,
-         remove_handler/2, get_event_queue/1, prune_event_queue/1, discard_events/2,
-         local_manager_state/1]).
+-export([child_spec/1, start_link/1, add_handler/2, dispatch/3, dispatch/4,
+         dispatch_sync/3, dispatch_sync/4, set_priority/2, set_priority/3, get_priority/1,
+         get_handlers/2, get_events/1, remove_handler/2, get_event_queue/1, prune_event_queue/1,
+         discard_events/2, local_manager_state/1]).
 
 -export_type([event_manager/0, queued_event/0, priority/0]).
 
@@ -20,10 +20,12 @@
 -type queued_event() :: {event(), event_payload(), dispatch_opts()}.
 -type event_payload() :: term().
 -type priority() :: integer().
--type discard_events() :: boolean().
--type priority_opts() :: #{reset_after => integer(), discard_events => discard_events()}.
--type dispatch_opts() :: #{priority => priority(), members => local | global}.
--type start_up_opts() :: #{name => event_manager(),priority => priority(), discard_events => discard_events()}.
+-type event_discard() :: boolean().
+-type priority_opts() :: #{reset_after => integer(), discard_events => event_discard()}.
+-type dispatch_opts() ::
+    #{priority => priority(), members => local | global, discard_event => event_discard()}.
+-type start_up_opts() ::
+    #{name => event_manager(), priority => priority(), discard_events => event_discard()}.
 
 %%------------------------------------------------------------------------------
 %% Public API
@@ -102,7 +104,7 @@ prune_event_queue(EventManager) ->
     gen_server:abcast(get_nodes(), EventManager, prune_event_queue),
     ok.
 
--spec discard_events(event_manager(), discard_events()) -> ok | {error, flag_not_boolean}.
+-spec discard_events(event_manager(), event_discard()) -> ok | {error, flag_not_boolean}.
 discard_events(EventManager, Flag) when is_boolean(Flag) ->
     gen_server:abcast(get_nodes(), EventManager, {discard_events, Flag}),
     ok;

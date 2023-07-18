@@ -34,6 +34,9 @@ dispatch_queued([Event | Events], Man, Prio, Eq) ->
 
 queue_event(EventQueue, {_, _, #{priority := Ep}}, ManPrio, true) when Ep < ManPrio ->
     {event_discarded, EventQueue};
+queue_event(EventQueue, {_, _, #{priority := Ep, discard_event := true}}, ManPrio, false)
+    when Ep < ManPrio ->
+    {event_discarded, EventQueue};
 queue_event(EventQueue, {Event, Payload, Opts}, _ManPrio, _DiscardEvents) ->
     Neq = [{Event, Payload, Opts} | EventQueue],
     {event_queued, Neq}.
