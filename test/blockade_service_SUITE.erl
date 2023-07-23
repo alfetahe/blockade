@@ -11,7 +11,7 @@
 -export([test_get_reset_opt/1, test_get_discard_opt/1, test_queue_prune/1,
          test_member_pids/1, test_rand_node/1, test_send_messages/1, test_dispatch_event/1,
          test_queue_event/1, test_dispatch_queued/1, test_startup_prio_confr/1,
-         test_emit_priority/1, test_sync_priority/1]).
+         test_emit_priority/1, test_sync_priority/1, test_cancel_ref/1]).
 
 -define(NR_OF_NODES, 5).
 
@@ -27,7 +27,8 @@ all() ->
      test_dispatch_queued,
      test_startup_prio_confr,
      test_emit_priority,
-     test_sync_priority].
+     test_sync_priority,
+     test_cancel_ref].
 
 init_per_suite(Config) ->
     Nodes =
@@ -210,3 +211,9 @@ test_sync_priority(_Config) ->
     same = blockade_service:sync_priority([no, no, same, same], -1000),
     yes = blockade_service:sync_priority([no, yes], any),
     most = blockade_service:sync_priority([most, most, less], any).
+
+test_cancel_ref(_Config) ->
+    Ref = erlang:send_after(10000, self(), test_cancel_ref),
+    NoRef = null,
+    ok = blockade_service:cancel_ref(Ref),
+    {error, no_ref} = blockade_service:cancel_ref(NoRef).

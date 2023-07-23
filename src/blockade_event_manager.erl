@@ -57,14 +57,15 @@ handle_cast(prune_event_queue, State) ->
 handle_cast({priority_emit, EmittedPrio}, #state{emitted_priorities = Ep} = State) ->
     {noreply, State#state{emitted_priorities = [EmittedPrio | Ep]}};
 handle_cast({set_priority, Priority, Opts},
-            #state{event_queue = Eq, manager = Man, schduler_ref = Sf} = State) ->
+            #state{event_queue = Eq, manager = Man, schduler_ref = Sr} = State) ->
+    blockade_service:cancel_ref(Sr),          
+    Neq = blockade_service:dispatch_queued(
+              lists:reverse(Eq), Man, Priority, []),
+    Nde = blockade_service:get_discard_opt(Opts, State#state.discard_events),
+    Nsr = blockade_service:get_reset_opt(Opts, Sr),
     {noreply,
-     State#state{priority = Priority, schduler_ref = blockade_service:get_reset_opt(Opts, Sf),
-                 event_queue =
-                     blockade_service:dispatch_queued(
-                         lists:reverse(Eq), Man, Priority, []),
-                 discard_events =
-                     blockade_service:get_discard_opt(Opts, State#state.discard_events)}};
+     State#state{priority = Priority, schduler_ref = Nsr, event_queue = Neq,
+                 discard_events = Nde}};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
