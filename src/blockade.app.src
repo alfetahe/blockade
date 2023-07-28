@@ -1,10 +1,10 @@
 {application,
  blockade,
- [{description, "An OTP library"},
+ [{description, "Event queue with priority levels"},
   {vsn, "0.1.0"},
   {registered, []},
   {applications, [kernel, stdlib]},
   {env, []},
   {modules, []},
   {licenses, ["Apache 2.0"]},
-  {links, []}]}.
+  {links, [{"GitHub", "https://github.com/alfetahe/blockade"}]}]}.

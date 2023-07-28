@@ -63,7 +63,7 @@ handle_cast({priority_emit, EmittedPrio}, #state{emitted_priorities = Ep} = Stat
     {noreply, State#state{emitted_priorities = [EmittedPrio | Ep]}};
 handle_cast({set_priority, Priority, Opts},
             #state{event_queue = Eq, manager = Man, schduler_ref = Sr} = State) ->
-    blockade_service:cancel_ref(Sr),          
+    blockade_service:cancel_ref(Sr),
     Neq = blockade_service:dispatch_queued(
               lists:reverse(Eq), Man, Priority, []),
     Nde = blockade_service:get_discard_opt(Opts, State#state.discard_events),
