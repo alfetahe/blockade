@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.29.1">
+    <meta name="project" content="blockade v0.1.0">
+
+    <title>blockade — blockade v0.1.0</title>
+    <link rel="stylesheet" href="dist/html-erlang-6FXMBT73.css" />
+
+
+    <script src="dist/handlebars.runtime-NWIB6V2M.js"></script>
+    <script src="dist/handlebars.templates-IV5W3OL2.js"></script>
+    <script src="dist/sidebar_items-66158ABA.js"></script>
+
+      <script src="docs_config.js"></script>
+
+    <script async src="dist/html-XN2TSG4M.js"></script>
+
+
+  </head>
+  <body data-type="modules" class="page-module">
+    <script>
+
+      try {
+        var settings = JSON.parse(localStorage.getItem('ex_doc:settings') || '{}');
+
+        if (settings.theme === 'dark' ||
+           ((settings.theme === 'system' || settings.theme == null) &&
+             window.matchMedia('(prefers-color-scheme: dark)').matches)
+           ) {
+          document.body.classList.add('dark')
+        }
+      } catch (error) { }
+    </script>
+
+<div class="main">
+
+<button class="sidebar-button sidebar-toggle" aria-label="toggle sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<section class="sidebar">
+  <form class="sidebar-search" action="search.html">
+    <button type="submit" class="search-button" aria-label="Submit Search">
+      <i class="ri-search-2-line" aria-hidden="true" title="Submit search"></i>
+    </button>
+    <button type="button" tabindex="-1" class="search-close-button" aria-label="Cancel Search">
+      <i class="ri-close-line ri-lg" aria-hidden="true" title="Cancel search"></i>
+    </button>
+    <label class="search-label">
+      <p class="sr-only">Search</p>
+      <input name="q" type="text" class="search-input" placeholder="Search..." aria-label="Input your search terms" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    </label>
+  </form>
+
+  <div class="autocomplete">
+    <div class="autocomplete-results">
+    </div>
+  </div>
+
+  <div class="sidebar-header">
+
+    <div class="sidebar-projectDetails">
+      <a href="readme.html" class="sidebar-projectName" translate="no">
+blockade
+      </a>
+      <strong class="sidebar-projectVersion" translate="no">
+        v0.1.0
+      </strong>
+    </div>
+    <ul class="sidebar-listNav">
+      <li><a id="extras-list-link" href="#full-list">Pages</a></li>
+
+        <li><a id="modules-list-link" href="#full-list">Modules</a></li>
+
+
+    </ul>
+  </div>
+
+  <div class="gradient"></div>
+  <ul id="full-list" class="sidebar-fullList"></ul>
+</section>
+
+<section class="content">
+  <output role="status" id="toast"></output>
+  <div class="content-outer">
+    <div id="content" class="content-inner">
+
+<h1>
+<button class="icon-action display-settings">
+  <i class="ri-settings-3-line"></i>
+  <span class="sr-only">Settings</span>
+</button>
+
+
+    <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L1" title="View Source" class="icon-action" rel="help">
+      <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+      <span class="sr-only">View Source</span>
+    </a>
+
+  <span translate="no">blockade</span> 
+  <small class="app-vsn" translate="no">(blockade v0.1.0)</small>
+
+</h1>
+
+
+
+  <section id="summary" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+        <span class="sr-only">Link to this section</span>
+      </a>
+      Summary
+    </h1>
+<div class="summary-types summary">
+  <h2>
+    <a href="#types">Types</a>
+  </h2>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:dispatch_opts/0" translate="no">dispatch_opts/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:event/0" translate="no">event/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:event_discard/0" translate="no">event_discard/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:event_manager/0" translate="no">event_manager/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:event_payload/0" translate="no">event_payload/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:priority/0" translate="no">priority/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:priority_opts/0" translate="no">priority_opts/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:queued_event/0" translate="no">queued_event/0</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:start_up_opts/0" translate="no">start_up_opts/0</a>
+
+      </div>
+
+    </div>
+
+</div>
+<div class="summary-functions summary">
+  <h2>
+    <a href="#functions">Functions</a>
+  </h2>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#add_handler/2" translate="no">add_handler(EventManager, Event)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#child_spec/1" translate="no">child_spec(Opts)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#discard_events/2" translate="no">discard_events(EventManager, Flag)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#dispatch/3" translate="no">dispatch(EventManager, Event, Payload)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#dispatch/4" translate="no">dispatch(EventManager, Event, Payload, Opts)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#dispatch_sync/3" translate="no">dispatch_sync(EventManager, Event, Payload)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#dispatch_sync/4" translate="no">dispatch_sync(EventManager, Event, Payload, Opts)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#get_event_queue/1" translate="no">get_event_queue(EventManager)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#get_events/1" translate="no">get_events(EventManager)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#get_handlers/2" translate="no">get_handlers(EventManager, Event)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#get_priority/1" translate="no">get_priority(EventManager)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#local_manager_state/1" translate="no">local_manager_state(EventManager)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#prune_event_queue/1" translate="no">prune_event_queue(EventManager)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#remove_handler/2" translate="no">remove_handler(EventManager, Event)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#set_priority/2" translate="no">set_priority(EventManager, Priority)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#set_priority/3" translate="no">set_priority(EventManager, Priority, Opts)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#start_link/1" translate="no">start_link(Opts)</a>
+
+      </div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="types" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+        <span class="sr-only">Link to this section</span>
+      </a>
+Types
+    </h1>
+    <div class="types-list">
+<section class="detail" id="t:dispatch_opts/0">
+
+  <div class="detail-header">
+    <a href="#t:dispatch_opts/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">dispatch_opts/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L25" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> dispatch_opts() ::
+    #{priority => <a href="#t:priority/0">priority</a>(), members => local | global, discard_event => <a href="#t:event_discard/0">event_discard</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:event/0">
+
+  <div class="detail-header">
+    <a href="#t:event/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">event/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L19" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> event() :: atom().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:event_discard/0">
+
+  <div class="detail-header">
+    <a href="#t:event_discard/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">event_discard/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L23" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> event_discard() :: boolean().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:event_manager/0">
+
+  <div class="detail-header">
+    <a href="#t:event_manager/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">event_manager/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L18" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> event_manager() :: atom().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:event_payload/0">
+
+  <div class="detail-header">
+    <a href="#t:event_payload/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">event_payload/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L21" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> event_payload() :: term().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:priority/0">
+
+  <div class="detail-header">
+    <a href="#t:priority/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">priority/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L22" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> priority() :: integer().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:priority_opts/0">
+
+  <div class="detail-header">
+    <a href="#t:priority_opts/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">priority_opts/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L24" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> priority_opts() :: #{reset_after => integer(), discard_events => <a href="#t:event_discard/0">event_discard</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:queued_event/0">
+
+  <div class="detail-header">
+    <a href="#t:queued_event/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">queued_event/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L20" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> queued_event() :: {<a href="#t:event/0">event</a>(), <a href="#t:event_payload/0">event_payload</a>(), <a href="#t:dispatch_opts/0">dispatch_opts</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:start_up_opts/0">
+
+  <div class="detail-header">
+    <a href="#t:start_up_opts/0" class="detail-link" title="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature" translate="no">start_up_opts/0</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L27" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> start_up_opts() ::
+    #{name => <a href="#t:event_manager/0">event_manager</a>(), priority => <a href="#t:priority/0">priority</a>(), discard_events => <a href="#t:event_discard/0">event_discard</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
+  <section id="functions" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+        <span class="sr-only">Link to this section</span>
+      </a>
+Functions
+    </h1>
+    <div class="functions-list">
+<section class="detail" id="add_handler/2">
+
+  <div class="detail-header">
+    <a href="#add_handler/2" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">add_handler(EventManager, Event)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L48" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> add_handler(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:event/0">event</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="child_spec/1">
+
+  <div class="detail-header">
+    <a href="#child_spec/1" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">child_spec(Opts)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L40" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> child_spec(map()) -> map().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="discard_events/2">
+
+  <div class="detail-header">
+    <a href="#discard_events/2" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">discard_events(EventManager, Flag)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L109" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> discard_events(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:event_discard/0">event_discard</a>()) -> ok | {error, flag_not_boolean}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="dispatch/3">
+
+  <div class="detail-header">
+    <a href="#dispatch/3" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">dispatch(EventManager, Event, Payload)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L64" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> dispatch(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:event/0">event</a>(), <a href="#t:event_payload/0">event_payload</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="dispatch/4">
+
+  <div class="detail-header">
+    <a href="#dispatch/4" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">dispatch(EventManager, Event, Payload, Opts)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L68" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> dispatch(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:event/0">event</a>(), <a href="#t:event_payload/0">event_payload</a>(), <a href="#t:dispatch_opts/0">dispatch_opts</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="dispatch_sync/3">
+
+  <div class="detail-header">
+    <a href="#dispatch_sync/3" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">dispatch_sync(EventManager, Event, Payload)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L73" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> dispatch_sync(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:event/0">event</a>(), <a href="#t:event_payload/0">event_payload</a>()) ->
+                 {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="dispatch_sync/4">
+
+  <div class="detail-header">
+    <a href="#dispatch_sync/4" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">dispatch_sync(EventManager, Event, Payload, Opts)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L78" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> dispatch_sync(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:event/0">event</a>(), <a href="#t:event_payload/0">event_payload</a>(), <a href="#t:dispatch_opts/0">dispatch_opts</a>()) ->
+                 {ok, event_dispatched} | {ok, event_queued} | {ok, event_discarded}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="get_event_queue/1">
+
+  <div class="detail-header">
+    <a href="#get_event_queue/1" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">get_event_queue(EventManager)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L100" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> get_event_queue(<a href="#t:event_manager/0">event_manager</a>()) -> {ok, list()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="get_events/1">
+
+  <div class="detail-header">
+    <a href="#get_events/1" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">get_events(EventManager)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L60" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> get_events(<a href="#t:event_manager/0">event_manager</a>()) -> {ok, [<a href="#t:event/0">event</a>()]}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="get_handlers/2">
+
+  <div class="detail-header">
+    <a href="#get_handlers/2" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">get_handlers(EventManager, Event)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L56" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> get_handlers(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:event/0">event</a>()) -> {ok, [pid()]}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="get_priority/1">
+
+  <div class="detail-header">
+    <a href="#get_priority/1" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">get_priority(EventManager)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L96" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> get_priority(<a href="#t:event_manager/0">event_manager</a>()) -> {ok, <a href="#t:priority/0">priority</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="local_manager_state/1">
+
+  <div class="detail-header">
+    <a href="#local_manager_state/1" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">local_manager_state(EventManager)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L116" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> local_manager_state(<a href="#t:event_manager/0">event_manager</a>()) -> {ok, map()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="prune_event_queue/1">
+
+  <div class="detail-header">
+    <a href="#prune_event_queue/1" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">prune_event_queue(EventManager)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L104" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> prune_event_queue(<a href="#t:event_manager/0">event_manager</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="remove_handler/2">
+
+  <div class="detail-header">
+    <a href="#remove_handler/2" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">remove_handler(EventManager, Event)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L52" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> remove_handler(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:event/0">event</a>()) -> ok | not_joined.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="set_priority/2">
+
+  <div class="detail-header">
+    <a href="#set_priority/2" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">set_priority(EventManager, Priority)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L84" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> set_priority(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:priority/0">priority</a>()) -> ok | {error, priority_not_integer}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="set_priority/3">
+
+  <div class="detail-header">
+    <a href="#set_priority/3" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">set_priority(EventManager, Priority, Opts)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L89" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> set_priority(<a href="#t:event_manager/0">event_manager</a>(), <a href="#t:priority/0">priority</a>(), <a href="#t:priority_opts/0">priority_opts</a>()) -> ok | {error, priority_not_integer}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="start_link/1">
+
+  <div class="detail-header">
+    <a href="#start_link/1" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">start_link(Opts)</h1>
+
+      <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/src/blockade.erl#L34" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> start_link(<a href="#t:start_up_opts/0">start_up_opts</a>()) -> {ok, pid()} | ignore | {error, term()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
+      <footer class="footer">
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/blockade/0.1.0" class="footer-hex-package">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/blockade/0.1.0">Hex Preview</a>
+
+                (<a href="https://preview.hex.pm/preview/blockade/0.1.0/show/src/blockade.erl">current file</a>)
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Search HexDocs packages">
+              Search HexDocs
+            </button>
+
+              <a href="blockade.epub" title="ePub version">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.29.1) for the
+
+            <a href="https://erlang.org" title="Erlang" target="_blank" translate="no">Erlang programming language</a>
+
+        </p>
+      </footer>
+    </div>
+  </div>
+</section>
+</div>
+
+
+  </body>
+</html>

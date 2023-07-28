@@ -1,6 +1,11 @@
+%%%-----------------------------------------------------------------------------
+%% @doc Internal services provider for blockade.
+%% @private
+%% @end
+%%%-----------------------------------------------------------------------------
 -module(blockade_service).
 
--include("include/blockade_header.hrl").
+-include("blockade_header.hrl").
 
 -export([rand_node/0, member_pids/3, send_messages/3, dispatch_event/4, queue_event/4,
          dispatch_queued/4, queue_prune/2, get_discard_opt/2, get_reset_opt/2, emit_priority/2,

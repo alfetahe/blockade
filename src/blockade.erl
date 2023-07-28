@@ -1,6 +1,6 @@
 -module(blockade).
 
--include("include/blockade_header.hrl").
+-include("blockade_header.hrl").
 
 %%------------------------------------------------------------------------------
 %% Public API exports
@@ -36,6 +36,7 @@ start_link(#{name := Name} = Opts) ->
 start_link(_) ->
     throw(mandatory_option_name_missing).
 
+-spec child_spec(map()) -> map().
 child_spec(#{name := Name} = Opts) ->
     #{id => ?PROCESS_NAME(Name, "sup"),
       start => {blockade_sup, start_link, [Name, Opts]},
@@ -115,9 +116,9 @@ discard_events(_EventManager, _Flag) ->
 local_manager_state(EventManager) ->
     gen_server:call(EventManager, get_state).
 
-%%--------------------------------------------------------------------------------------------------
+%%------------------------------------------------------------------------------
 %% Private functions
-%%--------------------------------------------------------------------------------------------------
+%%------------------------------------------------------------------------------
 
 format_opts(Opts) ->
     Priority = maps:get(priority, Opts, ?DEFAULT_PRIORITY),

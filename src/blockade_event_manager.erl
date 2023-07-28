@@ -1,6 +1,11 @@
+%%%-----------------------------------------------------------------------------
+%% @doc The event queue manager.
+%% @private
+%% @end
+%%%-----------------------------------------------------------------------------
 -module(blockade_event_manager).
 
--include("include/blockade_header.hrl").
+-include("blockade_header.hrl").
 
 -behaviour(gen_server).
 

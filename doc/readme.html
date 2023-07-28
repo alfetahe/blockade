@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.29.1">
+    <meta name="project" content="blockade v0.1.0">
+
+    <title>Blockade — blockade v0.1.0</title>
+    <link rel="stylesheet" href="dist/html-erlang-6FXMBT73.css" />
+
+
+    <script src="dist/handlebars.runtime-NWIB6V2M.js"></script>
+    <script src="dist/handlebars.templates-IV5W3OL2.js"></script>
+    <script src="dist/sidebar_items-66158ABA.js"></script>
+
+      <script src="docs_config.js"></script>
+
+    <script async src="dist/html-XN2TSG4M.js"></script>
+
+
+  </head>
+  <body data-type="extras" class="page-extra">
+    <script>
+
+      try {
+        var settings = JSON.parse(localStorage.getItem('ex_doc:settings') || '{}');
+
+        if (settings.theme === 'dark' ||
+           ((settings.theme === 'system' || settings.theme == null) &&
+             window.matchMedia('(prefers-color-scheme: dark)').matches)
+           ) {
+          document.body.classList.add('dark')
+        }
+      } catch (error) { }
+    </script>
+
+<div class="main">
+
+<button class="sidebar-button sidebar-toggle" aria-label="toggle sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<section class="sidebar">
+  <form class="sidebar-search" action="search.html">
+    <button type="submit" class="search-button" aria-label="Submit Search">
+      <i class="ri-search-2-line" aria-hidden="true" title="Submit search"></i>
+    </button>
+    <button type="button" tabindex="-1" class="search-close-button" aria-label="Cancel Search">
+      <i class="ri-close-line ri-lg" aria-hidden="true" title="Cancel search"></i>
+    </button>
+    <label class="search-label">
+      <p class="sr-only">Search</p>
+      <input name="q" type="text" class="search-input" placeholder="Search..." aria-label="Input your search terms" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    </label>
+  </form>
+
+  <div class="autocomplete">
+    <div class="autocomplete-results">
+    </div>
+  </div>
+
+  <div class="sidebar-header">
+
+    <div class="sidebar-projectDetails">
+      <a href="readme.html" class="sidebar-projectName" translate="no">
+blockade
+      </a>
+      <strong class="sidebar-projectVersion" translate="no">
+        v0.1.0
+      </strong>
+    </div>
+    <ul class="sidebar-listNav">
+      <li><a id="extras-list-link" href="#full-list">Pages</a></li>
+
+        <li><a id="modules-list-link" href="#full-list">Modules</a></li>
+
+
+    </ul>
+  </div>
+
+  <div class="gradient"></div>
+  <ul id="full-list" class="sidebar-fullList"></ul>
+</section>
+
+<section class="content">
+  <output role="status" id="toast"></output>
+  <div class="content-outer">
+    <div id="content" class="content-inner">
+
+<h1>
+<button class="icon-action display-settings">
+  <i class="ri-settings-3-line"></i>
+  <span class="sr-only">Settings</span>
+</button>
+
+
+    <a href="https://github.com/alfetahe/blockade/blob/v0.1.0/README.md#L1" title="View Source" class="icon-action" rel="help">
+      <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+      <span class="sr-only">View Source</span>
+    </a>
+
+
+  <span>Blockade</span>
+</h1>
+
+<h2 id="table-of-contents" class="section-heading">
+  <a href="#table-of-contents" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">table-of-contents</p>
+  </a>
+  Table of contents
+</h2>
+<ul><li><a href="#blockade">Blockade</a><ul><li><a href="#description">Description</a></li><li><a href="#setup">Setup</a><ul><li><a href="#elixir">Elixir</a></li><li><a href="#erlang">Erlang</a></li></ul></li><li><a href="#example-usage">Example usage</a><ul><li><a href="#elixir-1">Elixir</a></li><li><a href="#erlang-1">Erlang</a></li><li><a href="#using-priority-option">Using priority option</a></li></ul></li><li><a href="#distributed-environment-dispatching">Distributed environment dispatching</a></li><li><a href="#development">Development</a><ul><li><a href="#setup-using-docker">Setup with Docker</a></li><li><a href="#running-tests">Running tests</a></li></ul></li></ul></li></ul><h2 id="description" class="section-heading">
+  <a href="#description" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">description</p>
+  </a>
+  Description
+</h2>
+<p>Blockade provides a simple way to queue and dispatch events to subscribers.</p><p>Blockade enables you to set a priority level on the event queue. This allows you to handle events later or discard them completely when dispatched with lower priority than the current priority level on the event queue. 
+This can be handy in situations where you want to lock down the system and not process any events for some duration of time. In such cases, you can set a high priority level. Later, when the system is ready to handle events again, you can lower the priority level, and the queued events will be automatically dispatched (unless the <code class="inline">discard_events</code> option is set to <code class="inline">true</code>).</p><p>Blockade is built on top of the Erlang <code class="inline">pg</code> module, which means it will work in a distributed environment. Each node starts the <a href="blockade.html"><code class="inline">blockade</code></a> supervisor with the same name parameter. When dispatching events, the events will be received by all subscribers across the cluster.</p><p>Please read the documentation for the <a href="blockade.html"><code class="inline">blockade</code></a> module for more information on the available functions.</p><h2 id="setup" class="section-heading">
+  <a href="#setup" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">setup</p>
+  </a>
+  Setup
+</h2>
+<p>Blockade can be started under supervision tree in your application.
+When starting <a href="blockade.html"><code class="inline">blockade</code></a> you need to provide a name for the event queue. This name is used when dispatching events to the queue.</p><h3 id="elixir" class="section-heading">
+  <a href="#elixir" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">elixir</p>
+  </a>
+  Elixir
+</h3>
+<ol><li><p>Add the following to your <code class="inline">mix.exs</code> file:</p><pre><code class="makeup elixir" translate="no"><span class="p" data-group-id="6745404353-1">{</span><span class="ss">:blockade</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;~&gt; 0.1&quot;</span><span class="p" data-group-id="6745404353-1">}</span><span class="p">,</span></code></pre></li><li><p>Start <a href="blockade.html"><code class="inline">blockade</code></a> under your supervision tree</p><pre><code class="makeup elixir" translate="no"><span class="kn">alias</span><span class="w"> </span><span class="ss">:blockade</span><span class="p">,</span><span class="w"> </span><span class="ss">as</span><span class="p">:</span><span class="w"> </span><span class="nc">Blockade</span><span class="w">
+
+  </span><span class="kd">def</span><span class="w"> </span><span class="nf">init</span><span class="p" data-group-id="7644677509-1">(</span><span class="bp">_</span><span class="p" data-group-id="7644677509-1">)</span><span class="w"> </span><span class="k" data-group-id="7644677509-2">do</span><span class="w">
+    </span><span class="n">children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p" data-group-id="7644677509-3">[</span><span class="w">
+      </span><span class="p" data-group-id="7644677509-4">{</span><span class="nc">Blockade</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="7644677509-5">%{</span><span class="ss">name</span><span class="p">:</span><span class="w"> </span><span class="ss">:my_event_queue</span><span class="p" data-group-id="7644677509-5">}</span><span class="p" data-group-id="7644677509-4">}</span><span class="p">,</span><span class="w">
+    </span><span class="p" data-group-id="7644677509-3">]</span><span class="w">
+
+    </span><span class="n">opts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p" data-group-id="7644677509-6">[</span><span class="ss">strategy</span><span class="p">:</span><span class="w"> </span><span class="ss">:one_for_one</span><span class="p" data-group-id="7644677509-6">]</span><span class="w">
+    </span><span class="nc">Supervisor</span><span class="o">.</span><span class="n">init</span><span class="p" data-group-id="7644677509-7">(</span><span class="n">children</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p" data-group-id="7644677509-7">)</span><span class="w">
+  </span><span class="k" data-group-id="7644677509-2">end</span></code></pre></li></ol><h3 id="erlang" class="section-heading">
+  <a href="#erlang" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">erlang</p>
+  </a>
+  Erlang
+</h3>
+<p>Add the following to your <code class="inline">rebar.config</code> file:</p><ol><li><p>Add <a href="blockade.html"><code class="inline">blockade</code></a> as a dependency</p><pre><code class="makeup erlang" translate="no"><span class="p" data-group-id="8202806547-1">{</span><span class="ss">deps</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="8202806547-2">[</span><span class="p" data-group-id="8202806547-3">{</span><span class="ss">blockade</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;0.1.0&quot;</span><span class="p" data-group-id="8202806547-3">}</span><span class="p" data-group-id="8202806547-2">]</span><span class="p" data-group-id="8202806547-1">}</span><span class="p">.</span></code></pre></li><li><p>Start <a href="blockade.html"><code class="inline">blockade</code></a> under your supervision tree</p><pre><code class="makeup erlang" translate="no"><span class="nf">init</span><span class="p" data-group-id="6420394810-1">(</span><span class="n">Args</span><span class="p" data-group-id="6420394810-1">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w">
+    </span><span class="n">Children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p" data-group-id="6420394810-2">[</span><span class="w">
+        </span><span class="p" data-group-id="6420394810-3">#{</span><span class="ss">id</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ss">blockade</span><span class="p">,</span><span class="w"> </span><span class="ss">start</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p" data-group-id="6420394810-4">{</span><span class="ss">blockade</span><span class="p">,</span><span class="w"> </span><span class="ss">start_link</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6420394810-5">[</span><span class="p" data-group-id="6420394810-6">#{</span><span class="ss">name</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ss">my_event_queue</span><span class="p" data-group-id="6420394810-6">}</span><span class="p" data-group-id="6420394810-5">]</span><span class="p" data-group-id="6420394810-4">}</span><span class="p" data-group-id="6420394810-3">}</span><span class="w">
+    </span><span class="p" data-group-id="6420394810-2">]</span><span class="p">,</span><span class="w">
+
+    </span><span class="p" data-group-id="6420394810-7">{</span><span class="ss">ok</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6420394810-8">{</span><span class="p" data-group-id="6420394810-9">{</span><span class="ss">one_for_one</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p" data-group-id="6420394810-9">}</span><span class="p">,</span><span class="w"> </span><span class="n">Children</span><span class="p" data-group-id="6420394810-8">}</span><span class="p" data-group-id="6420394810-7">}</span><span class="p">.</span></code></pre></li></ol><h2 id="example-usage" class="section-heading">
+  <a href="#example-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">example-usage</p>
+  </a>
+  Example usage
+</h2>
+<blockquote><p><strong>Note</strong>
+When adding handlers to the event queue, the current process will be subscribed to the event queue. If subscribed multiple times, the process will receive the event multiple times.</p></blockquote><h3 id="elixir-1" class="section-heading">
+  <a href="#elixir-1" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">elixir-1</p>
+  </a>
+  Elixir
+</h3>
+<pre><code class="makeup elixir" translate="no"><span class="o">&gt;</span><span class="w"> </span><span class="kn">alias</span><span class="w"> </span><span class="ss">:blockade</span><span class="p">,</span><span class="w"> </span><span class="ss">as</span><span class="p">:</span><span class="w"> </span><span class="nc">Blockade</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">add_handler</span><span class="p" data-group-id="6433673189-1">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:event_key</span><span class="p" data-group-id="6433673189-1">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="6433673189-2">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;event_payload&quot;</span><span class="p" data-group-id="6433673189-2">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="6433673189-3">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;something_else&quot;</span><span class="p" data-group-id="6433673189-3">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="n">flush</span><span class="p" data-group-id="6433673189-4">(</span><span class="p" data-group-id="6433673189-4">)</span><span class="w">
+</span><span class="p" data-group-id="6433673189-5">{</span><span class="ss">:event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;event_payload&quot;</span><span class="p" data-group-id="6433673189-5">}</span><span class="w">
+</span><span class="p" data-group-id="6433673189-6">{</span><span class="ss">:event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;something_else&quot;</span><span class="p" data-group-id="6433673189-6">}</span></code></pre><h3 id="erlang-1" class="section-heading">
+  <a href="#erlang-1" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">erlang-1</p>
+  </a>
+  Erlang
+</h3>
+<pre><code class="makeup erlang" translate="no"><span class="o">&gt;</span><span class="w"> </span><span class="nc">blockade</span><span class="p">:</span><span class="nf">add_handler</span><span class="p" data-group-id="9686876142-1">(</span><span class="ss">my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">event_key</span><span class="p" data-group-id="9686876142-1">)</span><span class="p">.</span><span class="w">
+</span><span class="ss">ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">blockade</span><span class="p">:</span><span class="nf">dispatch</span><span class="p" data-group-id="9686876142-2">(</span><span class="ss">my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;event_payload&quot;</span><span class="p" data-group-id="9686876142-2">)</span><span class="p">.</span><span class="w">
+</span><span class="ss">ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">blockade</span><span class="p">:</span><span class="nf">dispatch</span><span class="p" data-group-id="9686876142-3">(</span><span class="ss">my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;something_else&quot;</span><span class="p" data-group-id="9686876142-3">)</span><span class="p">.</span><span class="w">
+</span><span class="ss">ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">flush</span><span class="p" data-group-id="9686876142-4">(</span><span class="p" data-group-id="9686876142-4">)</span><span class="p">.</span><span class="w">
+</span><span class="p" data-group-id="9686876142-5">{</span><span class="ss">event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;event_payload&quot;</span><span class="p" data-group-id="9686876142-5">}</span><span class="w">
+</span><span class="p" data-group-id="9686876142-6">{</span><span class="ss">event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;something_else&quot;</span><span class="p" data-group-id="9686876142-6">}</span></code></pre><h3 id="using-priority-option" class="section-heading">
+  <a href="#using-priority-option" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">using-priority-option</p>
+  </a>
+  Using priority option
+</h3>
+<pre><code class="makeup elixir" translate="no"><span class="o">&gt;</span><span class="w"> </span><span class="kn">alias</span><span class="w"> </span><span class="ss">:blockade</span><span class="p">,</span><span class="w"> </span><span class="ss">as</span><span class="p">:</span><span class="w"> </span><span class="nc">Blockade</span><span class="w">
+
+</span><span class="c1"># Subscribe current process to event with the key :some_event_key</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">add_handler</span><span class="p" data-group-id="6071395527-1">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:some_event_key</span><span class="p" data-group-id="6071395527-1">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+
+</span><span class="c1"># Set priority to 100 and reset back to 0 (default) after 30 seconds. Do not discard any queued events. </span><span class="w">
+</span><span class="c1"># If discard events is set to true, events with lower priority than the current priority will be discarded immediately after dispatching the event.</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">set_priority</span><span class="p" data-group-id="6071395527-2">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6071395527-3">%{</span><span class="ss">reset_after</span><span class="p">:</span><span class="w"> </span><span class="mi">30000</span><span class="p">,</span><span class="w"> </span><span class="ss">discard_events</span><span class="p">:</span><span class="w"> </span><span class="no">false</span><span class="p" data-group-id="6071395527-3">}</span><span class="p" data-group-id="6071395527-2">)</span><span class="w"> 
+</span><span class="ss">:ok</span><span class="w">
+
+</span><span class="c1"># Immediately dispatch event with priority 100 and check local mailbox for any events. </span><span class="w">
+</span><span class="c1"># There should be none if checked within 30 seconds after setting priority.</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="6071395527-4">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;priority_test&quot;</span><span class="p" data-group-id="6071395527-4">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="n">flush</span><span class="p" data-group-id="6071395527-5">(</span><span class="p" data-group-id="6071395527-5">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+
+</span><span class="c1"># Wait 30 seconds and check local mailbox again. There should be one event now.</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="n">flush</span><span class="p" data-group-id="6071395527-6">(</span><span class="p" data-group-id="6071395527-6">)</span><span class="w">
+</span><span class="p" data-group-id="6071395527-7">{</span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;priority_test&quot;</span><span class="p" data-group-id="6071395527-7">}</span><span class="w">
+
+</span><span class="c1"># Now lets try dispatching events with priority option.</span><span class="w">
+
+</span><span class="c1"># Set priority to 150 and discard any queued events with lower priority.</span><span class="w">
+</span><span class="c1"># This time the event queue will keep the priority and does not reset back to 0 because we did not provide the reset_after option.</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">set_priority</span><span class="p" data-group-id="6071395527-8">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="mi">150</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6071395527-9">%{</span><span class="ss">discard_events</span><span class="p">:</span><span class="w"> </span><span class="no">true</span><span class="p" data-group-id="6071395527-9">}</span><span class="p" data-group-id="6071395527-8">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="6071395527-10">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;will_be_discarded&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6071395527-11">%{</span><span class="ss">priority</span><span class="p">:</span><span class="w"> </span><span class="mi">149</span><span class="p" data-group-id="6071395527-11">}</span><span class="p" data-group-id="6071395527-10">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="6071395527-12">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;will_be_received prio 150&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6071395527-13">%{</span><span class="ss">priority</span><span class="p">:</span><span class="w"> </span><span class="mi">150</span><span class="p" data-group-id="6071395527-13">}</span><span class="p" data-group-id="6071395527-12">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="6071395527-14">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6071395527-15">{</span><span class="ss">:my_data</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;will_be_received prio 151&quot;</span><span class="p" data-group-id="6071395527-15">}</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6071395527-16">%{</span><span class="ss">priority</span><span class="p">:</span><span class="w"> </span><span class="mi">151</span><span class="p" data-group-id="6071395527-16">}</span><span class="p" data-group-id="6071395527-14">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="n">flush</span><span class="p" data-group-id="6071395527-17">(</span><span class="p" data-group-id="6071395527-17">)</span><span class="w">
+</span><span class="c1"># We can see that the dispatched event with lower priority than 150 was discarded.</span><span class="w">
+</span><span class="p" data-group-id="6071395527-18">{</span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;will_be_received prio 150&quot;</span><span class="p" data-group-id="6071395527-18">}</span><span class="w">
+</span><span class="p" data-group-id="6071395527-19">{</span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6071395527-20">{</span><span class="ss">:my_data</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;will_be_received prio 151&quot;</span><span class="p" data-group-id="6071395527-20">}</span><span class="p" data-group-id="6071395527-19">}</span></code></pre><p>We can also set the <code class="inline">discard_event</code> option to true per dispatch call meaning
+the event will be discarded if priority level on the event queue is higher than the priority level on the dispatch call:</p><pre><code class="makeup elixir" translate="no"><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">set_priority</span><span class="p" data-group-id="7881498211-1">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="mi">150</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="7881498211-2">%{</span><span class="ss">discard_events</span><span class="p">:</span><span class="w"> </span><span class="no">false</span><span class="p" data-group-id="7881498211-2">}</span><span class="p" data-group-id="7881498211-1">)</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="7881498211-3">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;will_be_discarded&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="7881498211-4">%{</span><span class="ss">priority</span><span class="p">:</span><span class="w"> </span><span class="mi">149</span><span class="p">,</span><span class="w"> </span><span class="ss">discard_event</span><span class="p">:</span><span class="w"> </span><span class="no">true</span><span class="p" data-group-id="7881498211-4">}</span><span class="p" data-group-id="7881498211-3">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="n">flush</span><span class="p" data-group-id="7881498211-5">(</span><span class="p" data-group-id="7881498211-5">)</span><span class="w">
+</span><span class="c1"># The event will be discarded and wont be received by the handler.</span></code></pre><h2 id="distributed-environment-dispatching" class="section-heading">
+  <a href="#distributed-environment-dispatching" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">distributed-environment-dispatching</p>
+  </a>
+  Distributed environment dispatching
+</h2>
+<p>By default <a href="blockade.html"><code class="inline">blockade</code></a> will dispatch events to all subscribers across the cluster. If you want to dispatch to local handlers only, you can set the members option to local when dispatching the event:</p><pre><code class="makeup elixir" translate="no"><span class="c1"># This event will be received by all handlers across the cluster.</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="5310874189-1">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;global_dispatch&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="5310874189-2">%{</span><span class="ss">members</span><span class="p">:</span><span class="w"> </span><span class="ss">:global</span><span class="p" data-group-id="5310874189-2">}</span><span class="p" data-group-id="5310874189-1">)</span><span class="w">
+</span><span class="ss">:ok</span><span class="w">
+
+</span><span class="c1"># This event will be received by local node handlers only.</span><span class="w">
+</span><span class="o">&gt;</span><span class="w"> </span><span class="nc">Blockade</span><span class="o">.</span><span class="n">dispatch</span><span class="p" data-group-id="5310874189-3">(</span><span class="ss">:my_event_queue</span><span class="p">,</span><span class="w"> </span><span class="ss">:some_event_key</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;local_dispatch&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="5310874189-4">%{</span><span class="ss">members</span><span class="p">:</span><span class="w"> </span><span class="ss">:local</span><span class="p" data-group-id="5310874189-4">}</span><span class="p" data-group-id="5310874189-3">)</span><span class="w">
+</span><span class="ss">:ok</span></code></pre><blockquote><p><strong>Note</strong>
+If dispatching events to all members across the cluster is not desired, you can start <a href="blockade.html"><code class="inline">blockade</code></a> with different names on different nodes. This way you can have multiple event queues across the cluster each completly isolated from each other. For example you can use the local node name as the event queue name which is unique across the cluster.</p></blockquote><h2 id="development" class="section-heading">
+  <a href="#development" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">development</p>
+  </a>
+  Development
+</h2>
+<h3 id="setup-with-docker" class="section-heading">
+  <a href="#setup-with-docker" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">setup-with-docker</p>
+  </a>
+  Setup with Docker
+</h3>
+<ul><li><code class="inline">docker-compose up -d</code></li><li><code class="inline">docker exec -it blockade_blockade_1 sh</code></li><li><code class="inline">rebar3 compile</code></li></ul><h3 id="running-tests" class="section-heading">
+  <a href="#running-tests" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i>
+  <p class="sr-only">running-tests</p>
+  </a>
+  Running tests
+</h3>
+<pre><code class="makeup bash" translate="no"><span class="gp unselectable">$ </span><span class="">rebar3 compile &amp;&amp; ct_run -dir test -logdir test_logs -pa ./_build/default/lib/blockade/ebin -setcookie cookievalue
+</span></code></pre>
+<div class="bottom-actions">
+  <div class="bottom-actions-item">
+
+      <a href="api-reference.html" class="bottom-actions-button" rel="prev">
+        <span class="subheader">
+          ← Previous Page
+        </span>
+        <span class="title">
+API Reference
+        </span>
+      </a>
+
+  </div>
+  <div class="bottom-actions-item">
+
+      <a href="license.html" class="bottom-actions-button" rel="next">
+        <span class="subheader">
+          Next Page →
+        </span>
+        <span class="title">
+LICENSE
+        </span>
+      </a>
+
+  </div>
+</div>
+      <footer class="footer">
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/blockade/0.1.0" class="footer-hex-package">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/blockade/0.1.0">Hex Preview</a>
+
+                (<a href="https://preview.hex.pm/preview/blockade/0.1.0/show/README.md">current file</a>)
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Search HexDocs packages">
+              Search HexDocs
+            </button>
+
+              <a href="blockade.epub" title="ePub version">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.29.1) for the
+
+            <a href="https://erlang.org" title="Erlang" target="_blank" translate="no">Erlang programming language</a>
+
+        </p>
+      </footer>
+    </div>
+  </div>
+</section>
+</div>
+
+
+  </body>
+</html>
