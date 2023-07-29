@@ -23,4 +23,4 @@ jobs:
     - name: Compile
       run: rebar3 compile
     - name: Run tests
-      run: rebar3 compile && ct_run -dir test -logdir test_logs -pa "./_build/default/lib/blockade/ebin" -setcookie cookievalue
+      run: ct_run -dir test -logdir test_logs -pa "_build/default/lib/blockade/ebin" -setcookie cookievalue

@@ -1,6 +1,6 @@
 # Blockade
 
-![unit tests](https://github.com/alfetahe/blockade/actions/workflows/blockade.yml/badge.svg)
+![unit tests](https://github.com/alfetahe/blockade/actions/workflows/erlang.yml/badge.svg)
 
 ## Table of contents
 <!-- TOC -->
