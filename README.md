@@ -23,6 +23,7 @@ Blockade enables you to set a priority level on the event queue. This allows you
 This can be handy in situations where you want to lock down the system and not process any events for some duration of time. In such cases, you can set a high priority level. Later, when the system is ready to handle events again, you can lower the priority level, and the queued events will be automatically dispatched (unless the `discard_events` option is set to `true`).
 
 Blockade is built on top of the Erlang `pg` module, which means it will work in a distributed environment. Each node starts the `blockade` supervisor with the same name parameter. When dispatching events, the events will be received by all subscribers across the cluster.
+When process dies or is terminated, the process will be unsubscribed from the event queue automatically.
 
 Please read the documentation for the `blockade` module for more information on the available functions.
 
