@@ -8,7 +8,8 @@
 -export([test_add_handler/1, test_remove_handler/1, test_get_events/1,
          test_get_handlers/1, test_get_priority/1, test_set_priority/1, test_get_event_queue/1,
          test_prune_event_queue/1, test_dispatch/1, test_dispatch_priority/1, test_dispatch_sync/1,
-         test_discard_events/1, test_discard_event/1, test_local_manager_state/1]).
+         test_discard_events/1, test_discard_event/1, test_local_manager_state/1,
+         test_atomic_priority_update/1]).
 
 all() ->
     [test_add_handler,
@@ -24,7 +25,8 @@ all() ->
      test_dispatch_sync,
      test_discard_events,
      test_discard_event,
-     test_local_manager_state].
+     test_local_manager_state,
+     test_atomic_priority_update].
 
 init_per_testcase(TestCase, Config) ->
     blockade_sup:start_link(TestCase, #{priority => ?DEFAULT_PRIORITY}),
@@ -150,3 +152,10 @@ test_local_manager_state(_Config) ->
 get_messages() ->
     {messages, Messages} = process_info(self(), messages),
     Messages.
+
+test_atomic_priority_update(_Config) ->
+    blockade:dispatch_sync(test_atomic_priority_update,
+                           test_event,
+                           test_data,
+                           #{atomic_priority_set => -15}),
+    {ok, -15} = blockade:get_priority(test_atomic_priority_update).

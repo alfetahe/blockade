@@ -9,7 +9,7 @@
 
 -export([rand_node/0, member_pids/3, send_messages/3, dispatch_event/4, queue_event/4,
          dispatch_queued/4, queue_prune/2, get_discard_opt/2, get_reset_opt/2, emit_priority/2,
-         sync_priority/2, startup_prio_confr/1, cancel_ref/1]).
+         sync_priority/2, startup_prio_confr/1, cancel_ref/1, atomic_priority_update/2]).
 
 %%------------------------------------------------------------------------------
 %% Public functions.
@@ -20,6 +20,14 @@ cancel_ref(Ref) when is_reference(Ref) ->
     ok;
 cancel_ref(_) ->
     {error, no_ref}.
+
+atomic_priority_update(CurrentPrio, Opts) ->
+    case maps:get(atomic_priority_set, Opts, undefined) of
+        undefined ->
+            CurrentPrio;
+        NewPrio ->
+            NewPrio
+    end.
 
 sync_priority([], Default) ->
     Default;

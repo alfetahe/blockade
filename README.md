@@ -170,6 +170,15 @@ By default `blockade` will dispatch events to all subscribers across the cluster
 :ok
 ```
 
+## # Dispatch options:
+- `members` - available options are `:global` and `:local`. Default is `:global`. User can choose to dispatch events to all members across the cluster or to local handlers only.
+- `priority` - set priority level for the event. Default is `0`. The if current priority on the event queue
+is higher than the priority level on the dispatch call, the event will be discarded or queued depending on the `discard_events` option.
+- `discard_event` - if set to `true`, the event will be discarded if priority level on the event queue is higher than the priority level on the dispatch call. Default is `false`.
+- `atomic_priority_set` - if set the priority level will be set atomically according to the passed value.
+This is handy when we want to dispatch event and immediately set the priority level to a higher value.
+
+
 > **Note**
 > If dispatching events to all members across the cluster is not desired, you can start `blockade` with different names on different nodes. This way you can have multiple event queues across the cluster each completly isolated from each other. For example you can use the local node name as the event queue name which is unique across the cluster.
 
