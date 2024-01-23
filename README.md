@@ -174,8 +174,8 @@ By default `blockade` will dispatch events to all subscribers across the cluster
 - `members` - define which members should receive the event. available options are:
   - `global` - dispatch event to all members within the cluster.
   - `local` - dispatch event to local handlers only.
-  - `external` - dispatch event to nodes except the local node.
-
+  - `external` - dispatch event to all nodes except the local node.
+  - `[node()]` - dispatch event to a specific nodes.
   Default is `global`. 
 
 - `priority` - set priority level for the event. Default is `0`. The if current priority on the event queue

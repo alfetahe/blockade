@@ -12,9 +12,9 @@
          end_per_testcase/2, test_get_handlers_dist/1, test_get_events_dist/1]).
 -export([test_add_handler_dist/1, test_remove_handler_dist/1, test_dispatch_sync_dist/1,
          test_dispatch_dist/1, test_dispatch_dist_prio/1, test_dispatch_dist_memb_local/1,
-         test_dispatch_dist_memb_global/1, test_dispatch_dist_memb_external/1,
-         test_get_set_priority_dist/1, test_get_event_queue_dist/1,
-         test_prune_event_queue_dist/1]).
+         test_dispatch_dist_memb_selection/1, test_dispatch_dist_memb_global/1,
+         test_dispatch_dist_memb_external/1, test_get_set_priority_dist/1,
+         test_get_event_queue_dist/1, test_prune_event_queue_dist/1]).
 
 all() ->
     [test_add_handler_dist,
@@ -26,6 +26,7 @@ all() ->
      test_dispatch_dist_prio,
      test_dispatch_dist_memb_local,
      test_dispatch_dist_memb_global,
+     test_dispatch_dist_memb_selection,
      test_dispatch_dist_memb_external,
      test_get_set_priority_dist,
      test_get_event_queue_dist,
@@ -193,6 +194,24 @@ test_dispatch_dist_memb_external(Config) ->
     Total = ?NR_OF_NODES,
     Total = length(AllMessages),
     true = lists:all(fun(Resp) -> Resp =:= memb_external end, AllMessages).
+
+test_dispatch_dist_memb_selection(Config) ->
+    Nodes = ?config(nodes, Config),
+    % Take the first 5 nodes from the list.
+    SelectedNodes = lists:map(fun({ok, _Pid, Node}) -> Node end, lists:sublist(Nodes, 5)),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist_memb_selection,
+                                           memb_selection,
+                                           Nodes),
+    blockade:dispatch(test_dispatch_dist_memb_selection,
+                      memb_selection,
+                      {memb_selection, self()},
+                      #{members => SelectedNodes}),
+
+    % Need to do one test sync call to make sure all selected nodes have handled the event.
+    blockade_test_helper:test_sync_msg(test_dispatch_dist_memb_selection, Nodes),
+    AllMessages = blockade_test_helper:get_all_messages([]),
+    5 = length(AllMessages),
+    true = lists:all(fun(Resp) -> Resp =:= memb_selection end, AllMessages).
 
 test_dispatch_dist_memb_global(Config) ->
     Nodes = ?config(nodes, Config),

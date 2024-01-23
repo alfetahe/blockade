@@ -84,6 +84,9 @@ member_pids(Scope, Event, MemberType) when MemberType == global ->
 member_pids(Scope, Event, MemberType) when MemberType == external ->
     LocalNode = node(),
     lists:filter(fun(Pid) -> node(Pid) =/= LocalNode end, pg:get_members(Scope, Event));
+member_pids(Scope, Event, MemberType) when is_list(MemberType) ->
+    lists:filter(fun(Pid) -> lists:member(node(Pid), MemberType) end,
+                 pg:get_members(Scope, Event));
 member_pids(_Scope, _Event, _MemberType) ->
     throw({error, invalid_members_option}).
 

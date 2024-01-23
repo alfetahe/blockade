@@ -116,6 +116,11 @@ test_member_pids(Config) ->
     ExternalMembers = blockade_service:member_pids(Scope, test_event, external),
     false = lists:member(LocalPid, ExternalMembers),
     GlobalMembers = blockade_service:member_pids(Scope, test_event, global),
+
+    Nodes = ?config(nodes, Config),
+    SelectedNodes = lists:map(fun({ok, _Pid, Node}) -> Node end, lists:sublist(Nodes, 2)),
+    SelectedPids = blockade_service:member_pids(Scope, test_event, SelectedNodes),
+    true = lists:all(fun(Pid) -> lists:member(node(Pid), SelectedNodes) end, SelectedPids),
     ?NR_OF_NODES + 1 = length(GlobalMembers),
     true = lists:all(fun(Pid) -> is_pid(Pid) end, GlobalMembers).
 
