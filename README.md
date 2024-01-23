@@ -14,6 +14,7 @@
     * [Erlang](#erlang-1)
     * [Using priority option](#using-priority-option)
   * [Distributed environment dispatching](#distributed-environment-dispatching)
+  * [Dispatching options:](#dispatching-options)
   * [Development](#development)
     * [Setup with Docker](#setup-using-docker)
     * [Running tests](#running-tests)
@@ -175,7 +176,7 @@ By default `blockade` will dispatch events to all subscribers across the cluster
   - `global` - dispatch event to all members within the cluster.
   - `local` - dispatch event to local handlers only.
   - `external` - dispatch event to all nodes except the local node.
-  - `[node()]` - dispatch event to a specific nodes.
+  - `[node()]` - dispatch event to a specified list of nodes.
   Default is `global`. 
 
 - `priority` - set priority level for the event. Default is `0`. The if current priority on the event queue
