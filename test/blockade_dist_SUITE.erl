@@ -12,8 +12,9 @@
          end_per_testcase/2, test_get_handlers_dist/1, test_get_events_dist/1]).
 -export([test_add_handler_dist/1, test_remove_handler_dist/1, test_dispatch_sync_dist/1,
          test_dispatch_dist/1, test_dispatch_dist_prio/1, test_dispatch_dist_memb_local/1,
-         test_dispatch_dist_memb_global/1, test_get_set_priority_dist/1,
-         test_get_event_queue_dist/1, test_prune_event_queue_dist/1]).
+         test_dispatch_dist_memb_global/1, test_dispatch_dist_memb_external/1,
+         test_get_set_priority_dist/1, test_get_event_queue_dist/1,
+         test_prune_event_queue_dist/1]).
 
 all() ->
     [test_add_handler_dist,
@@ -25,6 +26,7 @@ all() ->
      test_dispatch_dist_prio,
      test_dispatch_dist_memb_local,
      test_dispatch_dist_memb_global,
+     test_dispatch_dist_memb_external,
      test_get_set_priority_dist,
      test_get_event_queue_dist,
      test_prune_event_queue_dist].
@@ -175,6 +177,22 @@ test_dispatch_dist_memb_local(Config) ->
     AllMessages = blockade_test_helper:get_all_messages([]),
     1 = length(AllMessages),
     true = lists:all(fun(Resp) -> Resp =:= memb_local end, AllMessages).
+
+test_dispatch_dist_memb_external(Config) ->
+    Nodes = ?config(nodes, Config),
+    blockade_test_helper:add_handler_nodes(test_dispatch_dist_memb_external,
+                                           memb_external,
+                                           Nodes),
+    blockade:dispatch(test_dispatch_dist_memb_external,
+                      memb_external,
+                      {memb_external, self()},
+                      #{members => external}),
+    % Need to do one test sync call to make sure all external nodes have handled the event.
+    blockade_test_helper:test_sync_msg(test_dispatch_dist_memb_external, Nodes),
+    AllMessages = blockade_test_helper:get_all_messages([]),
+    Total = ?NR_OF_NODES,
+    Total = length(AllMessages),
+    true = lists:all(fun(Resp) -> Resp =:= memb_external end, AllMessages).
 
 test_dispatch_dist_memb_global(Config) ->
     Nodes = ?config(nodes, Config),

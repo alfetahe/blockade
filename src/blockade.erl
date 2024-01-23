@@ -38,8 +38,8 @@
     #{name => event_manager(), priority => priority(), discard_events => event_discard()}.
 %% Start up options which can be passed to the start_link function.
 -type dispatch_opts() ::
-    #{priority => priority(), members => local | global, discard_event => event_discard(),
-      atomic_priority_set => priority()}.
+    #{priority => priority(), members => local | global | external,
+      discard_event => event_discard(), atomic_priority_set => priority()}.
 %% Dispatch options.
 -type queued_event() :: {event(), event_payload(), dispatch_opts()}. %% Queued event.
 

@@ -113,6 +113,8 @@ test_member_pids(Config) ->
                                            test_event,
                                            ?config(nodes, Config)),
     [LocalPid] = blockade_service:member_pids(Scope, test_event, local),
+    ExternalMembers = blockade_service:member_pids(Scope, test_event, external),
+    false = lists:member(LocalPid, ExternalMembers),
     GlobalMembers = blockade_service:member_pids(Scope, test_event, global),
     ?NR_OF_NODES + 1 = length(GlobalMembers),
     true = lists:all(fun(Pid) -> is_pid(Pid) end, GlobalMembers).
