@@ -37,7 +37,7 @@ When starting `blockade` you need to provide a name for the event queue. This na
 
 1. Add the following to your `mix.exs` file:
 ```elixir
-{:blockade, "~> 0.1"},
+{:blockade, "~> 0.2"},
 ```
 
 2. Start `blockade` under your supervision tree
@@ -59,7 +59,7 @@ Add the following to your `rebar.config` file:
 
 1. Add `blockade` as a dependency
 ```erlang
-{deps, [{blockade, "0.1.0"}]}.
+{deps, [{blockade, "0.2.0"}]}.
 ```
 
 2. Start `blockade` under your supervision tree

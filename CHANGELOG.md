@@ -1,6 +1,6 @@
 # Change log
 
-v0.1.1 - XXXX-XX-XX
+v0.2.0 - 2024-01-23
 
 Added
 - New dispatch option `atomic_priority_set` to set priority and dispatch event in one atomic operation.
