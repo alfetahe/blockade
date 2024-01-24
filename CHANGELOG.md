@@ -6,3 +6,8 @@ Added
 - New dispatch option `atomic_priority_set` to set priority and dispatch event in one atomic operation.
 - New dispatch option for `members` called `external` to dispatch event to nodes except the local node.
 - New dispatch option for `members` to dispatch event to list of selected nodes.
+
+v0.2.1 - 2024-01-24
+
+Fixed
+- Priority was set incorrectly with dispatching
