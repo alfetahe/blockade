@@ -25,24 +25,35 @@
 %%------------------------------------------------------------------------------
 %% Types
 %%------------------------------------------------------------------------------
--type event_manager() :: atom(). %% The name of the event manager process.
--type event() :: atom(). %% The name of the event.
--type event_payload() :: term(). %% Event payload which can be any term.
--type priority_sync() :: true | false.
+
+%% The name of the event manager process.
+-type event_manager() :: atom(). 
+
+%% The name of the event.
+-type event() :: atom(). 
+
+ %% Event payload which can be any term.
+-type event_payload() :: term().
+
 %% Boolean indicating whether the priority should be synchronized within the cluster.
+-type priority_sync() :: true | false. 
 -type priority() :: integer().
 %% Priority level. The higher the priority the more important the event.
 -type event_discard() :: boolean().
-%% Boolean indicating whether to discard events or not in case the priority of the event is lower than the priority of the event manager.
+
+%% Boolean indicating whether to discard events or not in case the priority of 
+%% the event is lower than the priority of the event manager.
 -type priority_opts() :: #{reset_after => integer(), discard_events => event_discard()}.
+
 %% Priority options.
 -type start_up_opts() ::
-    #{name => event_manager(), priority => priority(), discard_events => event_discard(),
-      priority_sync => priority_sync()}.
+    #{name => event_manager(), priority => priority(), discard_events => event_discard(), priority_sync => priority_sync()}.
+
 %% Start up options which can be passed to the start_link function.
 -type dispatch_opts() ::
     #{priority => priority(), members => local | global | external | [node()],
       discard_event => event_discard(), atomic_priority_set => priority()}.
+
 %% Dispatch options.
 -type queued_event() :: {event(), event_payload(), dispatch_opts()}. %% Queued event.
 
