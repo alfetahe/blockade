@@ -178,6 +178,10 @@ set_priority(EventManager, Priority) ->
 %% Default priority is `0'.
 -spec set_priority(event_manager(), priority(), priority_opts()) ->
                       ok | {error, priority_not_integer}.
+set_priority(EventManager, Priority, #{local_priority_set := true} = Opts)
+    when is_integer(Priority) ->
+    gen_server:cast(EventManager, {set_priority, Priority, Opts}),
+    ok;
 set_priority(EventManager, Priority, Opts) when is_integer(Priority) ->
     gen_server:abcast(get_nodes(), EventManager, {set_priority, Priority, Opts}),
     ok;

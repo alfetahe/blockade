@@ -13,6 +13,7 @@ Includes a bugfix and new features.
 
 Added
 - Start option to disabled automatic priority synchronization with other nodes.
+- Option to set priority without propagation.
 
 Fixed
 - Priority was set incorrectly with dispatching

@@ -13,8 +13,9 @@
 -export([test_add_handler_dist/1, test_remove_handler_dist/1, test_dispatch_sync_dist/1,
          test_dispatch_dist/1, test_dispatch_dist_prio/1, test_dispatch_dist_memb_local/1,
          test_dispatch_dist_memb_selection/1, test_dispatch_dist_memb_global/1,
-         test_dispatch_dist_memb_external/1, test_get_set_priority_dist/1,
-         test_get_event_queue_dist/1, test_prune_event_queue_dist/1]).
+         test_dispatch_dist_memb_external/1, test_set_priority_dist/1,
+         test_set_priority_local_dist/1, test_get_event_queue_dist/1,
+         test_prune_event_queue_dist/1]).
 
 all() ->
     [test_add_handler_dist,
@@ -28,7 +29,8 @@ all() ->
      test_dispatch_dist_memb_global,
      test_dispatch_dist_memb_selection,
      test_dispatch_dist_memb_external,
-     test_get_set_priority_dist,
+     test_set_priority_dist,
+     test_set_priority_local_dist,
      test_get_event_queue_dist,
      test_prune_event_queue_dist].
 
@@ -229,14 +231,27 @@ test_dispatch_dist_memb_global(Config) ->
     Total = length(AllMessages),
     true = lists:all(fun(Resp) -> Resp =:= memb_global end, AllMessages).
 
-test_get_set_priority_dist(Config) ->
+test_set_priority_dist(Config) ->
     Nodes = ?config(nodes, Config),
-    blockade:set_priority(test_get_set_priority_dist, 5000),
-    Prios1 = blockade_test_helper:get_priorities(test_get_set_priority_dist, Nodes),
+    blockade:set_priority(test_set_priority_dist, 5000),
+    Prios1 = blockade_test_helper:get_priorities(test_set_priority_dist, Nodes),
+    {ok, 5000} = blockade:get_priority(test_set_priority_dist),
     true = lists:all(fun(Prio) -> Prio =:= {ok, 5000} end, Prios1),
-    blockade:set_priority(test_get_set_priority_dist, 9),
-    Prios2 = blockade_test_helper:get_priorities(test_get_set_priority_dist, Nodes),
-    true = lists:all(fun(Prio) -> Prio =:= {ok, 9} end, Prios2).
+    blockade:set_priority(test_set_priority_dist, 9),
+    Prios2 = blockade_test_helper:get_priorities(test_set_priority_dist, Nodes),
+    true = lists:all(fun(Prio) -> Prio =:= {ok, 9} end, Prios2),
+    {ok, 9} = blockade:get_priority(test_set_priority_dist).
+
+test_set_priority_local_dist(Config) ->
+    Nodes = ?config(nodes, Config),
+    blockade:set_priority(test_set_priority_local_dist, 5001, #{local_priority_set => true}),
+    [LocalPrio1 | Prios1] =
+        blockade_test_helper:get_priorities(test_set_priority_local_dist, Nodes),
+    {ok, 5001} = LocalPrio1,
+    true = lists:all(fun(Prio) -> Prio =:= {ok, 0} end, Prios1),
+    blockade:set_priority(test_set_priority_local_dist, 9001, #{local_priority_set => false}),
+    Prios2 = blockade_test_helper:get_priorities(test_set_priority_local_dist, Nodes),
+    true = lists:all(fun(Prio) -> Prio =:= {ok, 9001} end, Prios2).
 
 test_get_event_queue_dist(Config) ->
     E = test_get_event_queue_dist,

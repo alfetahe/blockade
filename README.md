@@ -171,7 +171,7 @@ By default `blockade` will dispatch events to all subscribers across the cluster
 :ok
 ```
 
-## # Dispatching options:
+### Dispatching options:
 - `members` - define which members should receive the event. available options are:
   - `global` - dispatch event to all members within the cluster.
   - `local` - dispatch event to local handlers only.
@@ -184,6 +184,54 @@ is higher than the priority level on the dispatch call, the event will be discar
 - `discard_event` - if set to `true`, the event will be discarded if priority level on the event queue is higher than the priority level on the dispatch call. Default is `false`.
 - `atomic_priority_set` - if set the priority level will be set atomically according to the passed value.
 This is handy when we want to dispatch event and immediately set the priority level to a higher value.
+
+### Disable priority synchronization
+In some cases, you might want to disable priority synchronization and keep priority level local to the node.
+This can be achieved by setting the `priority_sync` option to `false` when starting the `blockade` supervisor.
+Also keep in mind to set the `local_priority_set` option to `true` when setting the priority level
+or dispatching events with priority option.
+
+```elixir
+alias :blockade, as: Blockade
+
+# Start blockade supervisor with priority_sync set to false.
+def init(_) do
+  children = [
+    {Blockade, %{name: :my_event_queue, priority_sync: false}},
+  ]
+
+  opts = [strategy: :one_for_one]
+  Supervisor.init(children, opts)
+end
+
+# Set priority level to 100 and keep it local to the node.
+> Blockade.set_priority(:my_event_queue, 100, %{local_priority_set: true})
+
+# Dispatch event with priority level 100 and keep it local to the node.
+> Blockade.dispatch(:my_event_queue, :some_event_key, "priority_test", %{
+  priority: 100, 
+  local_priority_set: true,
+  atomic_priority_set: true
+  })
+```
+
+```erlang
+init(Args) ->
+    Children = [
+        #{id => blockade, start => {blockade, start_link, [#{name => my_event_queue, priority_sync => false}]}}
+    ],
+
+    {ok, {{one_for_one, 5, 10}, Children}}.
+
+% Set priority level to 100 and keep it local to the node.
+blockade:set_priority(my_event_queue, 100, #{local_priority_set => true}).
+
+% Dispatch event with priority level 100 and keep it local to the node.
+blockade:dispatch(my_event_queue, some_event_key, "priority_test", #{
+  priority => 100, 
+  local_priority_set => true,
+  atomic_priority_set => true}).
+```
 
 
 > **Note**
