@@ -228,6 +228,6 @@ test_cancel_ref(_Config) ->
     {error, no_ref} = blockade_service:cancel_ref(NoRef).
 
 test_atomic_priority_update(_Config) ->
-    99 = blockade_service:atomic_priority_update(10, #{atomic_priority_set => 99}),
-    -99 = blockade_service:atomic_priority_update(1, #{atomic_priority_set => -99}),
-    2 = blockade_service:atomic_priority_update(2, #{}).
+    99 = blockade_service:atomic_priority_update(any, 10, #{atomic_priority_set => 99}),
+    -99 = blockade_service:atomic_priority_update(any, 1, #{atomic_priority_set => -99}),
+    2 = blockade_service:atomic_priority_update(any, 2, #{}).

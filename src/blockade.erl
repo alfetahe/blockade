@@ -27,33 +27,34 @@
 %%------------------------------------------------------------------------------
 
 %% The name of the event manager process.
--type event_manager() :: atom(). 
-
+-type event_manager() :: atom().
 %% The name of the event.
--type event() :: atom(). 
-
- %% Event payload which can be any term.
+-type event() :: atom().
+%% Event payload which can be any term.
 -type event_payload() :: term().
-
 %% Boolean indicating whether the priority should be synchronized within the cluster.
--type priority_sync() :: true | false. 
--type priority() :: integer().
+-type priority_sync() :: true | false.
 %% Priority level. The higher the priority the more important the event.
+-type priority() :: integer().
+%% Boolean indicating whether to discard events or not when the priority of the event
+%%  is lower than the priority of the event manager.
 -type event_discard() :: boolean().
-
-%% Boolean indicating whether to discard events or not in case the priority of 
+%% Boolean indicating whether to discard events or not in case the priority of
 %% the event is lower than the priority of the event manager.
--type priority_opts() :: #{reset_after => integer(), discard_events => event_discard()}.
-
+-type priority_opts() ::
+    #{reset_after => integer(), discard_events => event_discard(),
+      local_priority_set => boolean()}.
 %% Priority options.
 -type start_up_opts() ::
-    #{name => event_manager(), priority => priority(), discard_events => event_discard(), priority_sync => priority_sync()}.
-
+    #{name => event_manager(), priority => priority(), discard_events => event_discard(),
+      priority_sync => priority_sync()}.
 %% Start up options which can be passed to the start_link function.
 -type dispatch_opts() ::
-    #{priority => priority(), members => local | global | external | [node()],
-      discard_event => event_discard(), atomic_priority_set => priority()}.
-
+    #{priority => priority(),
+      members => local | global | external | [node()],
+      discard_event => event_discard(),
+      atomic_priority_set => priority(),
+      local_priority_set => boolean()}.
 %% Dispatch options.
 -type queued_event() :: {event(), event_payload(), dispatch_opts()}. %% Queued event.
 

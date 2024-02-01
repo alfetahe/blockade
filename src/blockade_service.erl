@@ -9,7 +9,7 @@
 
 -export([rand_node/0, member_pids/3, send_messages/3, dispatch_event/4, queue_event/4,
          dispatch_queued/4, queue_prune/2, get_discard_opt/2, get_reset_opt/2, emit_priority/2,
-         sync_priority/2, startup_prio_confr/1, cancel_ref/1, atomic_priority_update/2]).
+         sync_priority/2, startup_prio_confr/1, cancel_ref/1, atomic_priority_update/3]).
 
 %%------------------------------------------------------------------------------
 %% Public functions.
@@ -21,13 +21,24 @@ cancel_ref(Ref) when is_reference(Ref) ->
 cancel_ref(_) ->
     {error, no_ref}.
 
-atomic_priority_update(CurrentPrio, Opts) ->
-    case maps:get(atomic_priority_set, Opts, undefined) of
-        undefined ->
-            CurrentPrio;
-        NewPrio ->
-            NewPrio
-    end.
+atomic_priority_update(EventManager, CurrentPrio, Opts) ->
+    NewPrio = maps:get(atomic_priority_set, Opts, CurrentPrio),
+
+    case maps:get(local_priority_set, Opts, false) of
+        false ->
+            % Check if priority has been updated and propagate the change.
+            case NewPrio =/= CurrentPrio of
+                true ->
+                    propagate_priority(EventManager, NewPrio),
+                    NewPrio;
+                false ->
+                    NewPrio
+            end;
+        _ ->
+            ok
+    end,
+
+    NewPrio.
 
 sync_priority([], Default) ->
     Default;
@@ -112,6 +123,11 @@ get_reset_opt(Opts, DefaultRef) ->
 %%------------------------------------------------------------------------------
 %% Internal functions.
 %%------------------------------------------------------------------------------
+
+propagate_priority(EventManager, Priority) ->
+    gen_server:abcast(
+        erlang:nodes([visible]), EventManager, {set_priority, Priority, #{}}),
+    ok.
 
 schedule_reset(Opts) ->
     ResetAfter = maps:get(reset_after, Opts, undefined),

@@ -59,10 +59,11 @@ handle_cast({discard_events, true}, #state{priority = P, event_queue = Eq} = Sta
     {noreply, State#state{discard_events = true, event_queue = NewEq}};
 handle_cast({discard_events, false}, State) ->
     {noreply, State#state{discard_events = false}};
-handle_cast({dispatch, Event, Payload, #{priority := P} = Opts}, State)
-    when P >= State#state.priority ->
-    blockade_service:dispatch_event(Event, Payload, State#state.manager, Opts),
-    NewPriority = blockade_service:atomic_priority_update(State#state.priority, Opts),
+handle_cast({dispatch, Event, Payload, #{priority := Ep} = Opts},
+            #state{manager = M, priority = Lp} = State)
+    when Ep >= Lp ->
+    blockade_service:dispatch_event(Event, Payload, M, Opts),
+    NewPriority = blockade_service:atomic_priority_update(M, Lp, Opts),
     {noreply, State#state{priority = NewPriority}};
 handle_cast({dispatch, Event, Payload, Opts},
             #state{event_queue = Eq, priority = P, discard_events = De} = State) ->
@@ -85,10 +86,12 @@ handle_cast({set_priority, Priority, Opts},
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
-handle_call({dispatch, Event, Payload, #{priority := P} = Opts}, _From, State)
+handle_call({dispatch, Event, Payload, #{priority := P} = Opts},
+            _From,
+            #state{manager = M} = State)
     when P >= State#state.priority ->
     blockade_service:dispatch_event(Event, Payload, State#state.manager, Opts),
-    NewPriority = blockade_service:atomic_priority_update(State#state.priority, Opts),
+    NewPriority = blockade_service:atomic_priority_update(M, State#state.priority, Opts),
     {reply, {ok, event_dispatched}, State#state{priority = NewPriority}};
 handle_call({dispatch, Event, Payload, Opts},
             _From,

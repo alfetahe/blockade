@@ -16,3 +16,4 @@ Added
 
 Fixed
 - Priority was set incorrectly with dispatching
+- Atomic priority set did not propagate to other nodes.
