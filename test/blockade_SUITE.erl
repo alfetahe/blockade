@@ -147,7 +147,8 @@ test_local_manager_state(_Config) ->
           event_queue => [],
           schduler_ref => undefined,
           emitted_priorities => [],
-          priority_confirmed => true}.
+          priority_confirmed => true,
+          priority_sync => true}.
 
 get_messages() ->
     {messages, Messages} = process_info(self(), messages),

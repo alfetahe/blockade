@@ -7,7 +7,12 @@ Added
 - New dispatch option for `members` called `external` to dispatch event to nodes except the local node.
 - New dispatch option for `members` to dispatch event to list of selected nodes.
 
-v0.2.1 - 2024-01-24
+v0.2.1 - 2024-02-02
+
+Includes a bugfix and new features.
+
+Added
+- Start option to disabled automatic priority synchronization with other nodes.
 
 Fixed
 - Priority was set incorrectly with dispatching

@@ -28,6 +28,8 @@
 -type event_manager() :: atom(). %% The name of the event manager process.
 -type event() :: atom(). %% The name of the event.
 -type event_payload() :: term(). %% Event payload which can be any term.
+-type priority_sync() :: true | false.
+%% Boolean indicating whether the priority should be synchronized within the cluster.
 -type priority() :: integer().
 %% Priority level. The higher the priority the more important the event.
 -type event_discard() :: boolean().
@@ -35,7 +37,8 @@
 -type priority_opts() :: #{reset_after => integer(), discard_events => event_discard()}.
 %% Priority options.
 -type start_up_opts() ::
-    #{name => event_manager(), priority => priority(), discard_events => event_discard()}.
+    #{name => event_manager(), priority => priority(), discard_events => event_discard(),
+      priority_sync => priority_sync()}.
 %% Start up options which can be passed to the start_link function.
 -type dispatch_opts() ::
     #{priority => priority(), members => local | global | external | [node()],
