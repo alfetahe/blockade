@@ -15,6 +15,7 @@
     * [Using priority option](#using-priority-option)
   * [Distributed environment dispatching](#distributed-environment-dispatching)
   * [Dispatching options:](#dispatching-options)
+  * [Disable priority synchronization](#disable-priority-synchronization)
   * [Development](#development)
     * [Setup with Docker](#setup-using-docker)
     * [Running tests](#running-tests)
@@ -60,7 +61,7 @@ Add the following to your `rebar.config` file:
 
 1. Add `blockade` as a dependency
 ```erlang
-{deps, [{blockade, "0.2.0"}]}.
+{deps, [{blockade, "0.2.1"}]}.
 ```
 
 2. Start `blockade` under your supervision tree
@@ -170,7 +171,7 @@ By default `blockade` will dispatch events to all subscribers across the cluster
 > Blockade.dispatch(:my_event_queue, :some_event_key, "local_dispatch", %{members: :local})
 :ok
 ```
-
+Disable priority synchronization
 ### Dispatching options:
 - `members` - define which members should receive the event. available options are:
   - `global` - dispatch event to all members within the cluster.
@@ -191,6 +192,7 @@ This can be achieved by setting the `priority_sync` option to `false` when start
 Also keep in mind to set the `local_priority_set` option to `true` when setting the priority level
 or dispatching events with priority option.
 
+Elixir:
 ```elixir
 alias :blockade, as: Blockade
 
@@ -209,12 +211,13 @@ end
 
 # Dispatch event with priority level 100 and keep it local to the node.
 > Blockade.dispatch(:my_event_queue, :some_event_key, "priority_test", %{
-  priority: 100, 
-  local_priority_set: true,
-  atomic_priority_set: true
+    priority: 100, 
+    local_priority_set: true,
+    atomic_priority_set: true
   })
 ```
 
+Erlang:
 ```erlang
 init(Args) ->
     Children = [
@@ -232,7 +235,6 @@ blockade:dispatch(my_event_queue, some_event_key, "priority_test", #{
   local_priority_set => true,
   atomic_priority_set => true}).
 ```
-
 
 > **Note**
 > If dispatching events to all members across the cluster is not desired, you can start `blockade` with different names on different nodes. This way you can have multiple event queues within the cluster each completly isolated from each other. For example you can use the local node name as the event queue name which is unique in the cluster.
