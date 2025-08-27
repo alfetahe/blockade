@@ -15,7 +15,7 @@
 -export([child_spec/1, start_link/1, add_handler/2, dispatch/3, dispatch/4,
          dispatch_sync/3, dispatch_sync/4, set_priority/2, set_priority/3, get_priority/1,
          get_handlers/2, get_events/1, remove_handler/2, get_event_queue/1, prune_event_queue/1,
-         discard_events/2, local_manager_state/1]).
+         discard_events/2, local_manager_state/1, monitor_handlers/2]).
 
 %%------------------------------------------------------------------------------
 %% Exported types
@@ -55,8 +55,11 @@
       discard_event => event_discard(),
       atomic_priority_set => priority(),
       local_priority_set => boolean()}.
+
 %% Dispatch options.
--type queued_event() :: {event(), event_payload(), dispatch_opts()}. %% Queued event.
+
+%% Queued event.
+-type queued_event() :: {event(), event_payload(), dispatch_opts()}.
 
 %%------------------------------------------------------------------------------
 %% Public API
@@ -87,6 +90,19 @@ child_spec(#{name := Name} = Opts) ->
 -spec add_handler(event_manager(), event()) -> ok.
 add_handler(EventManager, Event) ->
     pg:join(?PROCESS_NAME(EventManager, "pg"), Event, self()).
+
+%% Monitors the handlers for an event.
+%%
+%% This allows the process to be notified when the set of handlers changes.
+%% When a handler is added or removed, the process will receive a message
+%% in the following format:
+%% `{Ref, join | leave, Event, [HandlerPid1, HandlerPid2]}}.
+%%
+%% This function wraps the `pg:monitor/2` call.
+-spec monitor_handlers(event_manager(), event()) -> ok.
+monitor_handlers(EventManager, Event) ->
+    pg:monitor(?PROCESS_NAME(EventManager, "pg"), Event),
+    ok.
 
 %% @doc Remove a handler from an event.
 %%
