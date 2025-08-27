@@ -39,7 +39,7 @@
 %% Boolean indicating whether to discard events or not when the priority of the event
 %%  is lower than the priority of the event manager.
 -type event_discard() :: boolean().
-%% Boolean indicating whether to discard events or not in case the priority of
+%% Boolean indicating whether to discard events when the priority of
 %% the event is lower than the priority of the event manager.
 -type priority_opts() ::
     #{reset_after => integer(), discard_events => event_discard(),
@@ -48,7 +48,7 @@
 -type start_up_opts() ::
     #{name => event_manager(), priority => priority(), discard_events => event_discard(),
       priority_sync => priority_sync()}.
-%% Start up options which can be passed to the start_link function.
+%% Startup options that can be passed to the start_link function.
 -type dispatch_opts() ::
     #{priority => priority(),
       members => local | global | external | [node()],
@@ -86,19 +86,19 @@ child_spec(#{name := Name} = Opts) ->
 %%
 %% Calling this function multiple times with the same event will add the
 %% process to the event group multiple times and the process will receive
-%%  the event multiple times.
+%% the event multiple times.
 -spec add_handler(event_manager(), event()) -> ok.
 add_handler(EventManager, Event) ->
     pg:join(?PROCESS_NAME(EventManager, "pg"), Event, self()).
 
-%% Monitors the handlers for an event.
+%% @doc Monitors the handlers for an event.
 %%
 %% This allows the process to be notified when the set of handlers changes.
 %% When a handler is added or removed, the process will receive a message
 %% in the following format:
-%% `{Ref, join | leave, Event, [HandlerPid1, HandlerPid2]}}.
+%% `{Ref, join | leave, Event, [HandlerPid1, HandlerPid2]}}'.
 %%
-%% This function wraps the `pg:monitor/2` call.
+%% This function wraps the `pg:monitor/2' call.
 -spec monitor_handlers(event_manager(), event()) -> ok.
 monitor_handlers(EventManager, Event) ->
     pg:monitor(?PROCESS_NAME(EventManager, "pg"), Event),
@@ -160,7 +160,7 @@ dispatch_sync(EventManager, Event, Payload) ->
 %%
 %% The function will return when all messages are sent to the subscribed
 %% processes. This does not mean that all processes have handled the event
-%%  because the messages are sent asynchronously.
+%% because the messages are sent asynchronously.
 %%
 %% The event will be dispatched to all the processes that are subscribed to
 %% the event.
@@ -187,7 +187,7 @@ set_priority(EventManager, Priority) ->
 %%
 %% The priority will be propagated to all the nodes in the cluster.
 %%
-%% Optionally the priority can be reset after a certain number of milliseconds
+%% Optionally, the priority can be reset after a certain number of milliseconds,
 %% and events can be discarded if the priority of the event is lower than the
 %% priority of the event queue.
 %%
@@ -223,7 +223,7 @@ prune_event_queue(EventManager) ->
 %% @doc Boolean flag to enable or disable the event discarding feature.
 %%
 %% If the flag is set to `true', the event queue will discard events that have
-%% lower priority than the event queue priority.
+%% a lower priority than the event queue priority.
 -spec discard_events(event_manager(), event_discard()) -> ok | {error, flag_not_boolean}.
 discard_events(EventManager, Flag) when is_boolean(Flag) ->
     gen_server:abcast(get_nodes(), EventManager, {discard_events, Flag}),
